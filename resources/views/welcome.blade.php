@@ -53,7 +53,7 @@
                             src="{{ asset('images/ana-banner.jpg') }}" 
                             alt="Kids Collectt Yeni Sezon" 
                             class="absolute w-full h-full object-cover transition-transform duration-500 transform group-hover:scale-110">
-                        <div class="absolute inset-0 bg-black opacity-30 group-hover:opacity-20 transition-opacity"></div>
+                        
                         <div class="relative z-10 text-center p-8">
                             <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-shadow-lg font-brand">
                                 Çocukların Neşesi
@@ -64,17 +64,17 @@
 
                     <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <a href="#" class="block sm:col-span-1 bg-gradient-to-r from-pink-400 to-purple-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 text-white flex flex-col items-center justify-center text-center h-full">
-                            <img src="https://img.icons8.com/?size=100&id=12zlRtIjuhaE&format=png&color=000000" alt="Güvenli Ödeme" class="w-16 h-16 mb-4 filter brightness-0 invert" style="filter: brightness(0) invert(1);">
+                            <img src="https://img.icons8.com/?size=100&id=12zlRtIjuhaE&format=png&color=000000" alt="Güvenli Ödeme" class="w-16 h-16 mb-4 filter brightness-0 invert">
                             <h3 class="font-extrabold text-2xl font-brand">Güvenli Ödeme</h3>
                             <p class="text-sm">Kredi Kartı ile 3D Ödeme</p>
                         </a>
                         <a href="#" class="block sm:col-span-1 bg-gradient-to-r from-pink-400 to-purple-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 text-white flex flex-col items-center justify-center text-center h-full">
-                            <img src="https://img.icons8.com/?size=100&id=hwFnqExjOFhx&format=png&color=000000" alt="Ücretsiz Kargo" class="w-16 h-16 mb-4 filter brightness-0 invert" style="filter: brightness(0) invert(1);">
+                            <img src="https://img.icons8.com/?size=100&id=hwFnqExjOFhx&format=png&color=000000" alt="Ücretsiz Kargo" class="w-16 h-16 mb-4 filter brightness-0 invert">
                             <h3 class="font-extrabold text-2xl font-brand">Ücretsiz Kargo</h3>
                             <p class="text-sm">1000₺ ve Üzeri Alışverişinize!</p>
                         </a>
                         <a href="#" class="block sm:col-span-1 bg-gradient-to-r from-pink-400 to-purple-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 text-white flex flex-col items-center justify-center text-center h-full">
-                            <img src="https://img.icons8.com/?size=100&id=12391&format=png&color=000000" alt="İade & Teslimat" class="w-16 h-16 mb-4 filter brightness-0 invert" style="filter: brightness(0) invert(1);">
+                            <img src="https://img.icons8.com/?size=100&id=12391&format=png&color=000000" alt="İade & Teslimat" class="w-16 h-16 mb-4 filter brightness-0 invert">
                             <h3 class="font-extrabold text-2xl font-brand">İade & Teslimat</h3>
                             <p class="text-sm">14 Gün İçinde</p>
                         </a>
@@ -139,105 +139,108 @@
             </div>
         </section>
 
-        {{-- 
-            ❗❗ GÜNCELLEME 1: "MARKALAR" BÖLÜMÜNÜN YERİNE ❗❗
-            "Haftanın Fırsatları" eklendi.
-            Alpine.js ile basit bir geri sayım sayacı içerir.
-        --}}
-        <section class="bg-purple-50 py-16 sm:py-24 border-t border-purple-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-12 font-brand">
-                    <span class="bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Haftanın Fırsatları</span>
-                </h2>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        {{-- Haftanın Fırsatları --}}
+@if($featuredProduct && $salePrice && $expiresAt)
+<section class="bg-purple-50 py-16 sm:py-24 border-t border-purple-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-12 font-brand">
+            <span class="bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">Haftanın Fırsatları</span>
+        </h2>
+        
+        <div class="flex flex-col lg:flex-row gap-8 items-stretch">
+            
+            {{-- Resim --}}
+            <div class="flex-1 bg-white rounded-xl shadow-2xl overflow-hidden group flex justify-center items-center">
+                <a href="{{ route('products.show', $featuredProduct) }}" class="block w-full h-full">
+                    <img src="{{ $featuredProduct->getFirstMedia('product-images')?->getUrl() ?? 'https://placehold.co/600x600/F3E8FF/A855F7?text=Resim+Yok' }}" 
+                         alt="{{ $featuredProduct->name }}" 
+                         class="w-full h-full object-cover aspect-square">
+                </a>
+            </div>
+            
+            {{-- Sayaç ve Bilgi --}}
+            <div 
+                x-data="countdown('{{ $expiresAt }}')" 
+                x-init="start()"
+                class="flex-1 bg-white rounded-xl shadow-2xl p-8 flex flex-col justify-between"
+            >
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800">{{ $featuredProduct->name }}</h3>
                     
-                    <div class="bg-white rounded-xl shadow-2xl overflow-hidden group transform hover:scale-105 transition-transform duration-500">
-                        <a href="/urun/deneme1" class="block">
-                            <img src="https://placehold.co/600x600/F3E8FF/A855F7?text=Fırsat+Ürünü" alt="Fırsat Ürünü" class="w-full h-full object-cover">
-                        </a>
-                    </div>
+                    <p class="text-4xl font-extrabold text-pink-600 my-4">
+                        {{ number_format($salePrice / 100, 2, ',', '.') }} TL
+                        <span class="text-2xl text-gray-400 line-through ml-2">
+                            {{ number_format($featuredProduct->variants->min('price') / 100, 2, ',', '.') }} TL
+                        </span>
+                    </p>
                     
-                    <div 
-                        x-data="countdown()" 
-                        x-init="start()"
-                        class="bg-white rounded-xl shadow-2xl p-8"
-                    >
-                        <h3 class="text-2xl font-bold text-gray-800">Mavi GAP Tişört</h3>
-                        <p class="text-4xl font-extrabold text-pink-600 my-4">
-                            199,99 TL
-                            <span class="text-2xl text-gray-400 line-through ml-2">255,55 TL</span>
-                        </p>
-                        <p class="text-gray-600 mb-6">
-                            Bu harika fırsatı kaçırmayın! Sadece bu haftaya özel, %20 indirimli.
-                        </p>
-                        
-                        <div class="flex items-center space-x-4 mb-6">
-                            <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
-                                <span class="text-3xl font-bold" x-text="days">00</span>
-                                <span class="text-xs font-medium block">Gün</span>
-                            </div>
-                            <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
-                                <span class="text-3xl font-bold" x-text="hours">00</span>
-                                <span class="text-xs font-medium block">Saat</span>
-                            </div>
-                            <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
-                                <span class="text-3xl font-bold" x-text="minutes">00</span>
-                                <span class="text-xs font-medium block">Dakika</span>
-                            </div>
-                            <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
-                                <span class="text-3xl font-bold" x-text="seconds">00</span>
-                                <span class="text-xs font-medium block">Saniye</span>
-                            </div>
-                        </div>
+                    <p class="text-gray-600 mb-6">
+                        Bu harika fırsatı kaçırmayın! Sadece bu haftaya özel.
+                    </p>
 
-                        <a href="/urun/deneme1" 
-                           class="inline-block w-full text-center px-12 py-4 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-bold text-lg transition duration-300 transform hover:scale-105">
-                            Hemen Al
-                        </a>
+                    <div class="flex items-center space-x-4 mb-6">
+                        <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
+                            <span class="text-3xl font-bold" x-text="days">00</span>
+                            <span class="text-xs font-medium block">Gün</span>
+                        </div>
+                        <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
+                            <span class="text-3xl font-bold" x-text="hours">00</span>
+                            <span class="text-xs font-medium block">Saat</span>
+                        </div>
+                        <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
+                            <span class="text-3xl font-bold" x-text="minutes">00</span>
+                            <span class="text-xs font-medium block">Dakika</span>
+                        </div>
+                        <div class="text-center w-20 p-3 bg-pink-100 text-pink-700 rounded-lg shadow-inner">
+                            <span class="text-3xl font-bold" x-text="seconds">00</span>
+                            <span class="text-xs font-medium block">Saniye</span>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Geri sayım sayacı için Alpine.js mantığı --}}
-                <script>
-                    function countdown() {
-                        // Kalan süreyi 3 gün olarak ayarlayalım
-                        let targetDate = new Date().getTime() + (3 * 24 * 60 * 60 * 1000);
-                        
-                        return {
-                            days: '00',
-                            hours: '00',
-                            minutes: '00',
-                            seconds: '00',
-                            start() {
-                                let timer = setInterval(() => {
-                                    let now = new Date().getTime();
-                                    let distance = targetDate - now;
-
-                                    if (distance < 0) {
-                                        clearInterval(timer);
-                                        this.days = '00'; this.hours = '00'; this.minutes = '00'; this.seconds = '00';
-                                        return;
-                                    }
-
-                                    this.days = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-                                    this.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-                                    this.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-                                    this.seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
-                                }, 1000);
-                            }
-                        }
-                    }
-                </script>
+                <a href="{{ route('products.show', $featuredProduct) }}" 
+                   class="mt-auto inline-block w-full text-center px-12 py-4 bg-pink-600 text-white rounded-lg hover:bg-pink-700 font-bold text-lg transition duration-300 transform hover:scale-105">
+                    Hemen Al
+                </a>
             </div>
-        </section>
+        </div>
 
-        {{-- 
-            ❗❗ GÜNCELLEME 2: "BLOG" BÖLÜMÜNÜN YERİNE ❗❗
-            "Sizden Gelenler" (Instagram Galerisi) eklendi.
-            Bu, siteni daha dolu ve güvenilir gösterir.
-        --}}
+        <script>
+            function countdown(targetDate) {
+                let targetTime = new Date(targetDate).getTime();
+                
+                return {
+                    days: '00',
+                    hours: '00',
+                    minutes: '00',
+                    seconds: '00',
+                    start() {
+                        let timer = setInterval(() => {
+                            let now = new Date().getTime();
+                            let distance = targetTime - now;
+
+                            if (distance < 0) {
+                                clearInterval(timer);
+                                this.days = '00'; this.hours = '00'; this.minutes = '00'; this.seconds = '00';
+                                return;
+                            }
+
+                            this.days = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                            this.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                            this.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                            this.seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                        }, 1000);
+                    }
+                }
+            }
+        </script>
+    </div>
+</section>
+@endif
+
+
+        {{-- Instagram Galerisi --}}
         <section class="bg-gray-50 py-16 sm:py-24 border-t border-gray-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold text-gray-900 text-center mb-12 font-brand">
@@ -272,7 +275,7 @@
                 </div>
 
                 <div class="mt-12 text-center">
-                    <a href="#" {{-- Buraya Instagram linkini koy --}}
+                    <a href="#" {{-- Instagram linkini buraya ekle --}} 
                        class="inline-block px-12 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-xl font-bold text-lg transition duration-300 transform hover:scale-105">
                         Bizi Instagram'da Takip Edin!
                     </a>

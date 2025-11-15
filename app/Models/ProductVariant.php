@@ -25,17 +25,19 @@ class ProductVariant extends Model implements HasMedia
         'color_code',
         'min_quantity',
         'price',
+        'sale_price', // <-- YENİ EKLENDİ (İndirimli Fiyat)
+        'bayii_price', // <-- EKSİKTİ, EKLENDİ
         'stock',
         'sku',
     ];
 
     /**
      * Alanların tiplerini belirleme.
-     * 'price' (fiyat) veritabanında 19999 (kuruş) olarak saklanır,
-     * ama kodda 199.99 (TL) olarak davranır.
      */
     protected $casts = [
-        'price' => 'integer', // Veritabanında integer (kuruş) olduğunu belirtiyoruz
+        'price' => 'integer',
+        'sale_price' => 'integer', // <-- YENİ EKLENDİ
+        'bayii_price' => 'integer', // <-- EKSİKTİ, EKLENDİ
         'stock' => 'integer',
     ];
 
@@ -45,5 +47,60 @@ class ProductVariant extends Model implements HasMedia
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    // --- YENİ YARDIMCI METODLAR (İNDİRİM İÇİN) ---
+
+    /**
+     * İndirimli fiyatın geçerli olup olmadığını kontrol eder.
+     * sale_price varsa ve normal fiyattan (price) düşükse indirim geçerlidir.
+     */
+    public function hasDiscount(): bool
+    {
+        return $this->sale_price !== null && $this->sale_price < $this->price;
+    }
+
+    /**
+     * İndirim oranını yüzde olarak hesaplar.
+     * @return int|null
+     */
+    public function getDiscountPercent(): ?int
+    {
+        if (!$this->hasDiscount()) {
+            return null;
+        }
+
+        // Sıfıra bölme hatasını engelle
+        if ($this->price <= 0) {
+            return 0;
+        }
+
+        $discountAmount = $this->price - $this->sale_price;
+        $discountPercent = ($discountAmount / $this->price) * 100;
+
+        return (int)round($discountPercent); // Yuvarla ve tam sayıya çevir
+    }
+
+    /**
+     * Gösterilecek olan son fiyatı (İndirimli veya normal) TL formatında döndürür.
+     * Örn: "149,99 TL"
+     */
+    public function getFormattedPrice(): string
+    {
+        $priceInCents = $this->hasDiscount() ? $this->sale_price : $this->price;
+        return number_format($priceInCents / 100, 2, ',', '.') . ' TL';
+    }
+
+    /**
+     * Eğer indirim varsa, üstü çizili normal fiyatı TL formatında döndürür.
+     * Örn: "199,99 TL"
+     */
+    public function getFormattedOldPrice(): ?string
+    {
+        if (!$this->hasDiscount()) {
+            return null;
+        }
+        
+        return number_format($this->price / 100, 2, ',', '.') . ' TL';
     }
 }
