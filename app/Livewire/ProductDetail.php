@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+// 'use Cart;' satırı TAMAMEN KALDIRILDI.
+// Gerekli sınıflar:
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Support\Collection;
@@ -9,27 +11,20 @@ use Livewire\Component;
 
 class ProductDetail extends Component
 {
-    // --- DIŞARIDAN GELEN VERİ ---
-    public Product $product; // Kontrolcüden gelen ana ürün
+    // --- (Diğer tüm özellikleriniz $product, $variants vb. aynı kalacak) ---
+    public Product $product;
+    public Collection $variants;
+    public Collection $uniqueColors;
+    public Collection $uniqueSizes;
+    public ?string $selectedColor = null;
+    public ?string $selectedSize = null;
+    public int $quantity = 1;
+    public Collection $availableSizes;
+    public ?ProductVariant $selectedVariant = null;
+    public ?string $mainImageUrl = null;
 
-    // --- VERİTABANI VERİLERİ ---
-    public Collection $variants; // Bu ürüne ait TÜM stoktaki varyantlar
-    public Collection $uniqueColors; // Mevcut renkler (tekrarsız)
-    public Collection $uniqueSizes;  // Mevcut bedenler (tekrarsız)
-
-    // --- MÜŞTERİNİN SEÇİMLERİ ---
-    public ?string $selectedColor = null; // Seçilen renk
-    public ?string $selectedSize = null;  // Seçilen beden
-    public int $quantity = 1; // Seçilen adet
-
-    // --- HESAPLANAN DEĞERLER ---
-    public Collection $availableSizes; // Seçilen renge göre stokta olan bedenler
-    public ?ProductVariant $selectedVariant = null; // Seçilen son varyant (renk + beden)
-    public ?string $mainImageUrl = null; // O an gösterilen ana resim URL'si
-
-    /**
-     * Bileşen ilk yüklendiğinde
-     */
+    // --- (mount, updatedSelectedColor, updatedSelectedSize fonksiyonları aynı kalacak) ---
+    
     public function mount(Product $product)
     {
         $this->product = $product;
@@ -63,22 +58,18 @@ class ProductDetail extends Component
             ?? 'https://placehold.co/600x600/e2e8f0/94a3b8?text=Resim+Yok';
     }
 
-    /**
-     * Renk seçildiğinde ($selectedColor değiştiğinde) burası çalışır.
-     */
     public function updatedSelectedColor($newColor)
     {
+        // ... (Bu fonksiyonun içeriği aynı kalacak) ...
         $this->selectedSize = null;
         $this->selectedVariant = null;
         $this->quantity = 1;
 
-        // Seçilen renge göre mevcut bedenleri bul
         $this->availableSizes = $this->variants
             ->where('color_name', $newColor)
             ->pluck('size')
             ->unique();
         
-        // Ana resmi, bu rengin VARYANTINA ait resimle güncelle
         $firstVariantOfColor = $this->variants
             ->where('color_name', $newColor)
             ->first();
@@ -86,27 +77,22 @@ class ProductDetail extends Component
         if ($firstVariantOfColor && $firstVariantOfColor->hasMedia('variant-images')) {
             $this->mainImageUrl = $firstVariantOfColor->getFirstMedia('variant-images')->getUrl();
         } else {
-            // Renge ait özel resim yoksa, ürünün ana resmini göster
             $this->mainImageUrl = $this->product->getFirstMedia('product-images')?->getUrl()
                 ?? 'https://placehold.co/600x600/e2e8f0/94a3b8?text=Resim+Yok';
         }
         
-        // Sadece 1 beden varsa onu otomatik seç
         if ($this->availableSizes->count() == 1) {
             $this->selectedSize = $this->availableSizes->first();
-            $this->updatedSelectedSize($this->selectedSize); // Beden seçme fonksiyonunu tetikle
+            $this->updatedSelectedSize($this->selectedSize);
         }
     }
 
-    /**
-     * Beden seçildiğinde ($selectedSize değiştiğinde) burası çalışır.
-     */
     public function updatedSelectedSize($newSize)
     {
-        $this->quantity = 1; // Bedeni değiştirince adedi sıfırla
+        // ... (Bu fonksiyonun içeriği aynı kalacak) ...
+        $this->quantity = 1; 
 
         if ($this->selectedColor && $newSize) {
-            // O varyantın tamamını bul (örn: "Kırmızı" ve "S" olan)
             $this->selectedVariant = $this->variants
                 ->where('color_name', $this->selectedColor)
                 ->where('size', $newSize)
@@ -114,26 +100,53 @@ class ProductDetail extends Component
         }
     }
 
+    // ===================================================================
+    // === 'addToCart' FONKSİYONU GÜNCELLENDİ (Sinyal Yöntemine Geri Dönüldü) ===
+    // ===================================================================
     /**
      * Sepete Ekle butonuna tıklandığında
      */
     public function addToCart()
     {
-        if (! $this->selectedVariant) return; 
-        if ($this->quantity > $this->selectedVariant->stock) return; 
+        // --- 1. Kontroller ---
+        if (! $this->selectedVariant) {
+            session()->flash('error', 'Lütfen renk ve beden seçin.');
+            return;
+        }
+        if ($this->quantity > $this->selectedVariant->stock) {
+            session()->flash('error', 'Seçilen adet stok miktarından fazla olamaz.');
+            return;
+        }
+
+        // --- 2. Doğru Fiyatı Hesapla (KURUŞ CİNSİNDEN) ---
+        $variant = $this->selectedVariant;
+        $normalPriceKrs = $variant->price;
+        $salePriceKrs = $variant->sale_price;
+
+        // Geçerli bir indirim var mı?
+        $hasDiscount = ($salePriceKrs && $salePriceKrs > 0 && $salePriceKrs < $normalPriceKrs);
         
-        // Sinyali gönder
+        // Sepete eklenecek nihai fiyatı (Kuruş cinsinden) belirle
+        $finalPriceKrs = $hasDiscount ? $salePriceKrs : $normalPriceKrs;
+
+        // --- 3. Sinyali Gönder (Orijinal kodunuzdaki gibi) ---
+        // FİYAT BİLGİSİNİ SİNYALE EKLİYORUZ
         $this->dispatch('product-added-to-cart', [
-            'variant_id' => $this->selectedVariant->id,
+            'variant_id' => $variant->id,
             'quantity' => $this->quantity,
             'product_name' => $this->product->name,
-            'variant_name' => $this->selectedVariant->size . ' / ' . $this->selectedVariant->color_name
+            'variant_name' => $variant->size . ' / ' . $variant->color_name,
+            
+            // --- YENİ EKLENEN VERİLER ---
+            'price_krs' => $finalPriceKrs, // Sepete eklenecek KURUŞ fiyatı
+            'image_url' => $this->mainImageUrl // Mini sepette gösterilecek resim
         ]);
 
+        // --- 4. Başarı Mesajı ---
         session()->flash('success', $this->product->name . ' başarıyla sepetinize eklendi!');
     }
     
-    // Adet artırma/azaltma
+    // --- (incrementQuantity ve decrementQuantity fonksiyonları aynı kalacak) ---
     public function incrementQuantity()
     {
         if ($this->selectedVariant && $this->quantity < $this->selectedVariant->stock) {

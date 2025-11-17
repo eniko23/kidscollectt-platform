@@ -1,7 +1,7 @@
 @props(['product', 'showBadge' => false])
 {{-- 
     'showBadge' => false  -> Bu, 'show-badge' ayarı verilmezse 
-                            varsayılan olarak etiketi GİZLE demektir. 
+                          varsayılan olarak etiketi GİZLE demektir. 
 --}}
 
 <div class="group relative bg-white rounded-xl shadow-lg hover:shadow-2xl overflow-hidden transform hover:-translate-y-2 transition-all duration-300 border border-gray-100">
@@ -20,30 +20,84 @@
                 </div>
             @endif
 
-            {{-- 
-                ❗❗ DEĞİŞİKLİK BURADA ❗❗
-                Etiket artık sadece showBadge = true ise görünecek.
-            --}}
+            {{-- Yeni Etiketi (Değişiklik yok) --}}
             @if($showBadge)
                 <span class="absolute top-3 left-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">YENİ</span>
             @endif
         </div>
         
-        {{-- Ürün Bilgileri --}}
+        {{-- Ürün Bilgileri (FİYAT KISMI GÜNCELLENDİ) --}}
         <div class="p-5 text-center">
             <h3 class="text-md font-bold text-gray-800 mb-2 truncate" title="{{ $product->name }}">
                 {{ $product->name }}
             </h3>
-            <p class="mt-3 text-xl font-extrabold text-gray-900">
-                @php
-                    $minPrice = $product->variants()->where('stock', '>', 0)->min('price');
-                @endphp
-                @if($minPrice)
-                    {{ number_format($minPrice / 100, 2, ',', '.') }} TL
+            
+            {{-- === YENİ FİYAT BLOKU (BURASI DEĞİŞTİ) === --}}
+            @php
+                // Stokta olan varyantları bul
+                $inStockVariants = $product->variants()->where('stock', '>', 0);
+                
+                // Stoktakilerin en düşük normal fiyatını bul
+                $minPriceInStock = $inStockVariants->min('price');
+                
+                // Stoktakilerin en düşük indirimli fiyatını bul (0'dan büyük olmalı)
+                $minSalePriceInStock = $product->variants()
+                                    ->where('stock', '>', 0)
+                                    ->whereNotNull('sale_price')
+                                    ->where('sale_price', '>', 0)
+                                    ->min('sale_price');
+                
+                $displayPrice = null;
+                $displayOldPrice = null;
+
+                if ($minPriceInStock !== null) { // Stokta en az bir varyant varsa
+                    
+                    $priceToShow = $minSalePriceInStock ?? $minPriceInStock;
+                    
+                    // Hatalı girişi engelle: İndirimli fiyat normalden yüksekse, normal fiyatı göster
+                    if ($minSalePriceInStock && $minPriceInStock && $minSalePriceInStock >= $minPriceInStock) {
+                        $priceToShow = $minPriceInStock;
+                    }
+
+                    // Gösterilecek fiyatı formatla
+                    $displayPrice = number_format($priceToShow / 100, 2, ',', '.');
+                    
+                    // Gerçek bir indirim olup olmadığını kontrol et
+                    if ($minSalePriceInStock && $minPriceInStock && $minSalePriceInStock < $minPriceInStock) {
+                        // Varsa, eski fiyatı (normal fiyat) formatla
+                        $displayOldPrice = number_format($minPriceInStock / 100, 2, ',', '.');
+                    }
+                }
+            @endphp
+
+            {{-- 
+                HTML Çıktısı: 
+                'h-8' (yükseklik) sınıfı, indirimli ve indirimsiz ürünler 
+                aynı satırdayken "kayma" (layout shift) yaşanmasını engeller.
+            --}}
+            <p class="mt-3 text-xl font-extrabold text-gray-900 h-8 flex flex-col items-center justify-center">
+                @if($displayPrice)
+                    {{-- İNDİRİM VARSA (Eski fiyat doluysa) --}}
+                    @if($displayOldPrice)
+                        <span class="text-pink-600">
+                            {{ $displayPrice }} TL
+                        </span>
+                        <span class="text-gray-400 line-through text-base ml-1.5 -mt-1">
+                            {{ $displayOldPrice }} TL
+                        </span>
+                    @else
+                        {{-- İNDİRİM YOKSA (Sadece normal fiyat) --}}
+                        <span class="text-gray-900">
+                            {{ $displayPrice }} TL
+                        </span>
+                    @endif
                 @else
+                    {{-- STOKTA YOKSA ($displayPrice = null ise) --}}
                     <span class="text-gray-500 font-medium text-md">Stokta Yok</span>
                 @endif
             </p>
+            {{-- === FİYAT BLOKU BİTTİ === --}}
+
         </div>
     </a>
 </div>

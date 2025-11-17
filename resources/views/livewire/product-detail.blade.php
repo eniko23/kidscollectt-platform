@@ -82,19 +82,56 @@
                     {{ $product->name }}
                 </h1>
                 
-                {{-- Fiyat --}}
-                <div class="flex items-baseline gap-3 mt-4">
-                    <p class="text-4xl font-bold text-pink-600">
-                        @if($selectedVariant)
-                            {{ number_format($selectedVariant->price / 100, 2, ',', '.') }} TL
-                        @elseif($variants->count() > 0)
-                            {{ number_format($variants->min('price') / 100, 2, ',', '.') }} TL
-                            <span class="text-lg text-gray-500 font-normal">'den başlayan fiyatlar</span>
-                        @else
-                            <span class="text-red-500">Stokta Yok</span>
-                        @endif
-                    </p>
-                </div>
+                {{-- Fiyat (GÜNCELLENDİ) --}}
+<div class="flex items-baseline gap-3 mt-4">
+    
+    @if($selectedVariant)
+        {{-- 1. VARYANT SEÇİLDİYSE --}}
+        @php
+            $normalPrice = $selectedVariant->price;
+            $salePrice = $selectedVariant->sale_price;
+            
+            // Geçerli bir indirim var mı? (sale_price dolu, 0'dan büyük ve normal fiyattan düşük)
+            $hasDiscount = ($salePrice && $salePrice > 0 && $salePrice < $normalPrice);
+        @endphp
+
+        @if($hasDiscount)
+            {{-- İndirim Varsa: Yeni Fiyat + Üstü Çizili Eski Fiyat --}}
+            <p class="text-4xl font-bold text-pink-600">
+                {{ number_format($salePrice / 100, 2, ',', '.') }} TL
+            </p>
+            <p class="text-2xl font-normal text-gray-400 line-through ml-2">
+                {{ number_format($normalPrice / 100, 2, ',', '.') }} TL
+            </p>
+        @else
+            {{-- İndirim Yoksa: Sadece Normal Fiyat --}}
+            <p class="text-4xl font-bold text-pink-600">
+                {{ number_format($normalPrice / 100, 2, ',', '.') }} TL
+            </p>
+        @endif
+
+    @elseif($variants->count() > 0)
+        {{-- 2. VARYANT SEÇİLMEDİYSE (Sayfa ilk yüklendiğinde) --}}
+        {{-- Product Model'e eklediğimiz Accessor'u (display_price) kullanalım --}}
+        <p class="text-4xl font-bold text-pink-600">
+            {{ $product->display_price }} TL 
+            @if($product->display_old_price)
+                {{-- Eğer en düşük fiyat bir indirimse, eski fiyatı da göster --}}
+                <span class="text-2xl font-normal text-gray-400 line-through ml-2">
+                    {{ $product->display_old_price }} TL
+                </span>
+            @endif
+        </p>
+         <span class="text-lg text-gray-500 font-normal ml-2">'den başlayan fiyatlar</span>
+        
+    @else
+        {{-- 3. HİÇ VARYANT YOKSA --}}
+        <p class="text-3xl font-bold text-red-500">
+            Stokta Yok
+        </p>
+    @endif
+
+</div>
             </div>
 
             {{-- Açıklama --}}
