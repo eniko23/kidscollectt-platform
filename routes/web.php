@@ -9,6 +9,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Models\Category;
 
+use Illuminate\Support\Facades\Artisan;
+
 // ===================================================================
 // VİTRİN (ÖN YÜZ) ROTALARI
 // ===================================================================
@@ -101,4 +103,17 @@ Route::middleware(['auth'])->group(function () {
             ),
         )
         ->name('two-factor.show');
+});
+
+
+Route::get('/link-storage', function () {
+    $target = storage_path('app/public');
+    $link = public_path('storage');
+    
+    if (file_exists($link)) {
+        return 'Link zaten var!';
+    }
+    
+    symlink($target, $link);
+    return 'Storage linki başarıyla oluşturuldu!';
 });
