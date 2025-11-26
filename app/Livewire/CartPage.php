@@ -5,7 +5,9 @@ namespace App\Livewire;
 use App\Models\Coupon;
 use App\Services\CartService;
 use Livewire\Component;
+use Livewire\Attributes\Layout; // Şablonu belirtmek için
 
+#[Layout('components.layouts.storefront')] // Ana şablonu kullan
 class CartPage extends Component
 {
     public array $items = [];
@@ -13,38 +15,29 @@ class CartPage extends Component
 
     public string $couponCode = '';
     public ?Coupon $appliedCoupon = null;
+    
+    // Hesaplanan Değerler
     public int $discount = 0;
+    public int $vat = 0; // KDV
     public int $shippingCost = 0;
     public int $total = 0;
 
-    // --- KALDIRILDI ---
-    // public CartService $cartService; (Hata buydu)
-    // --- KALDIRILDI ---
-    
-    // --- KALDIRILDI ---
-    // public function boot(CartService $cartService)
-    // {
-    //     $this->cartService = $cartService;
-    // }
-    // --- KALDIRILDI ---
-
     /**
-     * Component ilk yüklendiğinde
-     * CartService'i buraya enjekte ediyoruz
+     * Component ilk yüklendiğinde çalışır
+     * CartService otomatik olarak enjekte edilir (Laravel Magic!)
      */
     public function mount(CartService $cartService)
     {
-        // loadCart fonksiyonuna servisi parametre olarak iletiyoruz
         $this->loadCart($cartService);
     }
 
     /**
-     * Sepeti yüklerken servisi parametre olarak alıyor
+     * Sepet verilerini ve hesaplamaları yükler
      */
     public function loadCart(CartService $cartService)
     {
         $this->items = $cartService->getItems();
-        $this->subtotal = $cartService->getSubtotal();
+        $this->subtotal = $cartService->getSubtotal(); // Bu fonksiyon getItems() içindeki 'subtotal'ları toplar
         
         $this->appliedCoupon = $cartService->getAppliedCoupon(); 
         
@@ -52,30 +45,59 @@ class CartPage extends Component
             $this->couponCode = $this->appliedCoupon->code;
         }
 
-        $this->calculateTotals();
+        $this->calculateTotals($cartService); // Hesaplama fonksiyonuna servisi gönder
     }
 
     /**
-     * Bu fonksiyon servise ihtiyaç duymuyor, aynı kalabilir
+     * Tüm toplamları hesaplar (İndirim, KDV, Kargo, Genel Toplam)
      */
-    public function calculateTotals()
+    public function calculateTotals(CartService $cartService)
     {
+        // 1. İndirim Hesabı
         $this->discount = 0; 
-
         if ($this->appliedCoupon) {
             if ($this->appliedCoupon->type == 'fixed') {
                 $this->discount = $this->appliedCoupon->value;
-            } elseif ($this->appliedCoupon->type == 'percent') {
-                $this->discount = (int) ($this->subtotal * ($this->appliedCoupon->percent_off / 100));
+            } elseif ($this->appliedCoupon->type == 'percentage') { // 'percent' değil 'percentage' (Veritabanına göre)
+                $this->discount = (int) ($this->subtotal * ($this->appliedCoupon->value / 100)); // 'percent_off' değil 'value'
+            }
+            
+            // İndirim, ara toplamdan büyük olamaz
+            if ($this->discount > $this->subtotal) {
+                $this->discount = $this->subtotal;
             }
         }
         
-        if ($this->appliedCoupon && $this->subtotal < $this->appliedCoupon->min_amount) {
-             $this->removeCoupon(app(CartService::class)); // Servisi burada manuel çağırabiliriz
+        // Eğer indirim sonrası tutar, kuponun minimum tutarının altına düşerse kuponu kaldır
+        // (Not: Genelde minimum tutar, indirimden ÖNCEKİ tutara bakılarak kontrol edilir. 
+        // Bu yüzden bu kontrolü applyCoupon'da yapmak daha mantıklı, burada sadece tekrar kontrol ediyoruz)
+        if ($this->appliedCoupon && $this->appliedCoupon->min_amount && $this->subtotal < $this->appliedCoupon->min_amount) {
+             $this->removeCoupon($cartService); 
+             return; // removeCoupon zaten calculateTotals'ı tekrar çağıracak
         }
 
-        $this->shippingCost = $this->subtotal >= 100000 ? 0 : 9900;
-        $this->total = $this->subtotal - $this->discount + $this->shippingCost;
+        // 2. İndirimli Ara Toplam (KDV ve Kargo buna göre hesaplanmaz, ama genel toplama etki eder)
+        $discountedSubtotal = $this->subtotal - $this->discount;
+
+        // 3. KDV Hesabı (%10) - İndirimden sonraki tutar üzerinden mi yoksa ham tutar üzerinden mi?
+        // Genelde Türkiye'de KDV, indirim düşüldükten sonraki tutar üzerinden hesaplanır.
+        $this->vat = (int) ($discountedSubtotal * 0.10);
+
+        // 4. Kargo Hesabı
+        // Kargo kuralı: İndirimli Ara Toplam 1000 TL ve üzeriyse ücretsiz
+        $this->shippingCost = $discountedSubtotal >= 100000 ? 0 : 9900;
+
+        // 5. Genel Toplam
+        // (Ara Toplam - İndirim) + KDV + Kargo 
+        // *NOT: Senin 'subtotal' dediğin rakam KDV DAHİL fiyatlar mı?*
+        // E-ticarette genelde ürün fiyatları KDV Dahil girilir. 
+        // Eğer öyleyse, KDV'yi eklememeli, sadece "içindeki KDV'yi göstermeliyiz".
+        // Aşağıdaki formül, fiyatların KDV HARİÇ girildiği varsayımına göredir.
+        // Eğer fiyatlar KDV Dahil ise: $this->total = $discountedSubtotal + $this->shippingCost;
+        
+        // Bizim sistemde ürünleri KDV Dahil (Piyasa standardı) gibi düşündük.
+        // O yüzden KDV'yi toplama EKLEMİYORUZ, sadece bilgi olarak hesaplıyoruz.
+        $this->total = $discountedSubtotal + $this->shippingCost;
 
         if ($this->total < 0) {
             $this->total = 0;
@@ -83,56 +105,55 @@ class CartPage extends Component
     }
 
     /**
-     * CartService'i buraya enjekte ediyoruz
+     * Kupon Uygula
      */
     public function applyCoupon(CartService $cartService)
     {
-        $coupon = Coupon::where('code', $this->couponCode)
-                        ->first();
+        $coupon = Coupon::where('code', $this->couponCode)->first();
 
         if (!$coupon) {
-            $cartService->removeCoupon(); 
-            $this->appliedCoupon = null;
-            $this->calculateTotals();
+            // Geçersizse mevcut kuponu da kaldır (temizle)
+            // Amaç sadece hata mesajı vermekse kaldırmayabiliriz de.
+            // $this->removeCoupon($cartService); 
+            
             session()->flash('error_coupon', 'Geçersiz kupon kodu.');
             return;
         }
         
+        // Tarih kontrolü (Opsiyonel ama iyi olur)
+        if ($coupon->expires_at && $coupon->expires_at->isPast()) {
+             session()->flash('error_coupon', 'Bu kuponun süresi dolmuş.');
+             return;
+        }
+        
         if ($coupon->min_amount && $this->subtotal < $coupon->min_amount) {
-            $cartService->removeCoupon();
-            $this->appliedCoupon = null;
-            $this->calculateTotals();
             $minAmountTL = number_format($coupon->min_amount / 100, 2, ',', '.');
             session()->flash('error_coupon', "Bu kupon için minimum {$minAmountTL} TL harcama gereklidir.");
             return;
         }
 
         $cartService->applyCoupon($coupon); 
-        $this->appliedCoupon = $coupon;
-        $this->calculateTotals();
+        $this->loadCart($cartService); // Verileri yenile
         session()->flash('success_coupon', 'Kupon başarıyla uygulandı!');
     }
 
     /**
-     * CartService'i buraya enjekte ediyoruz
+     * Kupon Kaldır
      */
     public function removeCoupon(CartService $cartService)
     {
         $cartService->removeCoupon(); 
-        $this->appliedCoupon = null;
-        $this->couponCode = '';
-        $this->calculateTotals();
+        $this->loadCart($cartService); // Verileri yenile ve toplamları tekrar hesapla
         session()->flash('info_coupon', 'Kupon kaldırıldı.');
     }
 
     public function goToCheckout()
     {
-        return $this->redirect(route('checkout.index'));
+        return $this->redirect(route('checkout.index')); // Rota adının doğru olduğundan emin ol
     }
 
     /**
-     * CartService'i buraya enjekte ediyoruz
-     * updateQuantity(..., $variantId, $quantity) blade dosyasından gelen parametreler
+     * Adet Güncelle
      */
     public function updateQuantity(CartService $cartService, $variantId, $quantity)
     {
@@ -142,13 +163,12 @@ class CartPage extends Component
             $cartService->update($variantId, $quantity);
         }
         
-        // loadCart'a enjekte ettiğimiz servisi iletiyoruz
         $this->loadCart($cartService);
-        $this->dispatch('cart-updated');
+        $this->dispatch('cart-updated'); // Header'daki sepet ikonunu güncelle
     }
 
     /**
-     * CartService'i buraya enjekte ediyoruz
+     * Ürün Sil
      */
     public function removeItem(CartService $cartService, $variantId)
     {
@@ -158,29 +178,25 @@ class CartPage extends Component
     }
 
     /**
-     * CartService'i buraya enjekte ediyoruz
+     * Adet Artır (+)
      */
     public function incrementQuantity(CartService $cartService, $variantId)
     {
-        $cart = $cartService->getCart();
-        if (isset($cart[$variantId])) {
-            $currentQuantity = $cart[$variantId]['quantity'];
-            
-            // updateQuantity'ye servisi ve diğer parametreleri iletiyoruz
+        $items = $cartService->getCart(); // Ham session verisi
+        if (isset($items[$variantId])) {
+            $currentQuantity = $items[$variantId]['quantity'];
             $this->updateQuantity($cartService, $variantId, $currentQuantity + 1);
         }
     }
 
     /**
-     * CartService'i buraya enjekte ediyoruz
+     * Adet Azalt (-)
      */
     public function decrementQuantity(CartService $cartService, $variantId)
     {
-        $cart = $cartService->getCart();
-        if (isset($cart[$variantId])) {
-            $currentQuantity = $cart[$variantId]['quantity'];
-            
-            // updateQuantity'ye servisi ve diğer parametreleri iletiyoruz
+        $items = $cartService->getCart();
+        if (isset($items[$variantId])) {
+            $currentQuantity = $items[$variantId]['quantity'];
             $this->updateQuantity($cartService, $variantId, $currentQuantity - 1);
         }
     }

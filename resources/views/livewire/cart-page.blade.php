@@ -111,7 +111,7 @@
                     {{-- GÜNCELLENDİ: Özet Detayları --}}
                     <div class="space-y-3 border-t border-gray-200 pt-4">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Ara Toplam</span>
+                            <span class="text-gray-600">Ara Toplam:</span>
                             <span class="text-gray-900 font-medium">{{ number_format($subtotal / 100, 2, ',', '.') }} TL</span>
                         </div>
                         
@@ -130,7 +130,7 @@
                         @endif
 
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Kargo</span>
+                            <span class="text-gray-600">Kargo:</span>
                             <span class="text-gray-900 font-medium">
                                 @if($shippingCost == 0)
                                     <span class="text-green-600">Ücretsiz</span>
@@ -139,6 +139,12 @@
                                 @endif
                             </span>
                         </div>
+                    </div>
+
+                    {{-- KDV Bilgisi (Bilgi amaçlı, toplama dahil değil çünkü fiyatlar KDV dahil) --}}
+                    <div class="flex justify-between text-gray-500 text-sm">
+                            <span>KDV (%10):</span>
+                            <span>{{ number_format($vat / 100, 2, ',', '.') }} TL</span>
                     </div>
 
                     {{-- GÜNCELLENDİ: Toplam Fiyat --}}
