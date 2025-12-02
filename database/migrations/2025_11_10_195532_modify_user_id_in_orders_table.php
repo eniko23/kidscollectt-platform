@@ -12,9 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->nullable()->change();
-        });
+        if (DB::getDriverName() === 'sqlite') {
+             Schema::table('orders', function (Blueprint $table) {
+                $table->unsignedBigInteger('user_id')->nullable()->change();
+            });
+        } else {
+            // doctrine/dbal paketine ihtiyaç DUYMAYAN yöntem
+            // 'user_id' sütununu 'boş bırakılabilir' (NULL) olarak değiştiriyoruz
+            DB::statement('ALTER TABLE orders MODIFY user_id BIGINT UNSIGNED NULL');
+        }
     }
 
     /**
@@ -22,8 +28,13 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->nullable(false)->change();
-        });
+        if (DB::getDriverName() === 'sqlite') {
+             Schema::table('orders', function (Blueprint $table) {
+                $table->unsignedBigInteger('user_id')->nullable(false)->change();
+            });
+        } else {
+            // Geri alma işlemi (eski haline, 'boş bırakılamaz' haline)
+            DB::statement('ALTER TABLE orders MODIFY user_id BIGINT UNSIGNED NOT NULL');
+        }
     }
 };

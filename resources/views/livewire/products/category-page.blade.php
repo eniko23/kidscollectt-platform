@@ -24,7 +24,7 @@ mount(function (Category $category) {
     $this->category = $category;
 
     // Bu kategoriye ait TÜM ürünlerin ID'lerini al
-    $productIds = $this->category->products()->pluck('id');
+    $productIds = $this->category->products()->pluck('products.id');
 
     // O ürünlere ait TÜM varyantları çek
     $variants = ProductVariant::whereIn('product_id', $productIds)
@@ -45,6 +45,7 @@ mount(function (Category $category) {
 with(fn () => [
     
     'products' => $this->category->products()
+        ->select('products.*')
         ->where('is_active', true)
         
         // 1. FİLTRE: Eğer $selectedSizes dizisi doluysa...
