@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            // 'price' kolonundan sonra, boş bırakılabilir ('nullable')
-            // bir integer kolonu ekler.
-            $table->integer('sale_price')->nullable()->after('price');
-        });
+        if (!Schema::hasColumn('product_variants', 'sale_price')) {
+            Schema::table('product_variants', function (Blueprint $table) {
+                // 'price' kolonundan sonra, boş bırakılabilir ('nullable')
+                // bir integer kolonu ekler.
+                $table->integer('sale_price')->nullable()->after('price');
+            });
+        }
     }
 
     /**
@@ -23,9 +25,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            // Bir sorun olursa, bu metot kolonu geri siler.
-            $table->dropColumn('sale_price');
-        });
+        if (Schema::hasColumn('product_variants', 'sale_price')) {
+            Schema::table('product_variants', function (Blueprint $table) {
+                // Bir sorun olursa, bu metot kolonu geri siler.
+                $table->dropColumn('sale_price');
+            });
+        }
     }
 };

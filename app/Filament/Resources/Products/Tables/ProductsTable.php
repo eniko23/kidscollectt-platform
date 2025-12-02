@@ -29,9 +29,10 @@ class ProductsTable
                 ->searchable(), // Arama kutusunda bu sütuna göre ara
 
             // 2. Kategori Adı Sütunu (İlişkili)
-            TextColumn::make('category.name') // "category" ilişkisine git, oradaki "name"i al
-                ->label('Kategori')
-                ->badge() // Şık bir etiket içinde göster
+            TextColumn::make('categories.name')
+                ->label('Kategoriler')
+                ->badge()
+                ->separator(',')
                 ->searchable(),
 
             // 3. Durum Sütunu (Aktif/Pasif)

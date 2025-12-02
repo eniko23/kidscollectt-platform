@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // <-- BUNU EKLEYİN
-use Illuminate\Database\Eloquent\Relations\HasMany;   // <-- BUNU EKLEYİN
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
@@ -42,10 +43,9 @@ class Category extends Model
     /**
      * Bu kategoriye ait tüm "Ürünleri" (Products) getirir.
      */
-    public function products(): HasMany
+    public function products(): BelongsToMany
     {
-        // 'products' tablosundaki 'category_id' sütunu üzerinden bağlanır.
-        return $this->hasMany(Product::class, 'category_id');
+        return $this->belongsToMany(Product::class);
     }
 
     public function variants(): HasMany
