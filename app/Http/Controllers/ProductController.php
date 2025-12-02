@@ -11,10 +11,21 @@ class ProductController extends Controller
     /**
      * Tüm ürünleri listeler (örn: /urunler sayfası için).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::where('is_active', true)
-            ->latest() // En yeniden eskiye
+        $query = Product::where('is_active', true);
+
+        if ($request->filled('categories')) {
+            $categoryIds = is_array($request->input('categories'))
+                ? $request->input('categories')
+                : explode(',', $request->input('categories'));
+
+            $query->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            });
+        }
+
+        $products = $query->latest() // En yeniden eskiye
             ->paginate(12); // Sayfada 12 ürün
 
         // 'products.index' adında bir view (tasarım) dosyası arayacak

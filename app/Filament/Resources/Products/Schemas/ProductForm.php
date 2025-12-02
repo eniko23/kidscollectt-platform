@@ -35,10 +35,13 @@ class ProductForm
                     ->label('URL (Slug)')->required()->maxLength(255)
                     ->unique(table: 'products', column: 'slug', ignoreRecord: true),
 
-                Select::make('category_id')
-                    ->label('Kategori')->required()
-                    ->relationship(name: 'category', titleAttribute: 'name')
-                    ->searchable()->preload(),
+                Select::make('categories')
+                    ->label('Kategoriler')
+                    ->multiple()
+                    ->relationship(name: 'categories', titleAttribute: 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
 
                 Select::make('vat_rate')
                     ->label('KDV Oranı (%)')->options([10 => '%10', 20 => '%20'])

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -24,7 +24,6 @@ class Product extends Model implements HasMedia
     'name',
     'slug',
     'description',
-    'category_id',
     'is_active',
     // --- YENİ ALANLAR ---
     'vat_rate',
@@ -45,14 +44,12 @@ class Product extends Model implements HasMedia
 
 
     /**
-     * Bu ürünün ait olduğu "Kategoriyi" getirir.
+     * Bu ürünün ait olduğu "Kategorileri" getirir.
      */
-    public function category(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        // 'category_id' sütunu üzerinden 'categories' tablosundaki 'id'ye bağlanır.
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsToMany(Category::class);
     }
-    // ... category() fonksiyonunun bittiği yer ...
 
     /**
     * Bu ürüne ait tüm "Varyantları" (beden, renk vb.) getirir.
