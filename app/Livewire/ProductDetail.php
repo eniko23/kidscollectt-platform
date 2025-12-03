@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Support\Collection;
 use Livewire\Component;
+use App\Support\VatCalculator;
 
 class ProductDetail extends Component
 {
@@ -124,6 +125,14 @@ class ProductDetail extends Component
         $variant = $this->selectedVariant;
         $normalPriceKrs = $variant->price;
         $salePriceKrs = $variant->sale_price;
+
+        // KDV Ekleme (Eğer vat_rate varsa)
+        if ($this->product->vat_rate > 0) {
+            $normalPriceKrs = VatCalculator::calculate($normalPriceKrs, $this->product->vat_rate);
+            if ($salePriceKrs) {
+                $salePriceKrs = VatCalculator::calculate($salePriceKrs, $this->product->vat_rate);
+            }
+        }
 
         // Geçerli bir indirim var mı?
         $hasDiscount = ($salePriceKrs && $salePriceKrs > 0 && $salePriceKrs < $normalPriceKrs);

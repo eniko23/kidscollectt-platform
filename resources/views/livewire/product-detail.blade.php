@@ -90,6 +90,14 @@
         @php
             $normalPrice = $selectedVariant->price;
             $salePrice = $selectedVariant->sale_price;
+
+            // KDV Ekleme
+            if($product->vat_rate > 0) {
+                $normalPrice = \App\Support\VatCalculator::calculate($normalPrice, $product->vat_rate);
+                if($salePrice) {
+                    $salePrice = \App\Support\VatCalculator::calculate($salePrice, $product->vat_rate);
+                }
+            }
             
             // Geçerli bir indirim var mı? (sale_price dolu, 0'dan büyük ve normal fiyattan düşük)
             $hasDiscount = ($salePrice && $salePrice > 0 && $salePrice < $normalPrice);
