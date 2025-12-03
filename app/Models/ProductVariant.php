@@ -23,6 +23,8 @@ class ProductVariant extends Model implements HasMedia
         'size',
         'color_name',
         'color_code',
+        'color_name_2',
+        'color_code_2',
         'min_quantity',
         'price',
         'sale_price', // <-- YENİ EKLENDİ (İndirimli Fiyat)
