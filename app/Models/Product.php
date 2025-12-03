@@ -10,6 +10,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Support\VatCalculator;
 
 class Product extends Model implements HasMedia
 {
@@ -121,6 +122,11 @@ class Product extends Model implements HasMedia
             return "Fiyat Yok"; // Hiç varyant/fiyat girilmemişse
         }
 
+        // KDV Ekleme (Eğer vat_rate varsa)
+        if ($this->vat_rate > 0) {
+            $displayPrice = VatCalculator::calculate($displayPrice, $this->vat_rate);
+        }
+
         // Kuruşu TL'ye çevir (örn: 19999 -> 199,99)
         // number_format($number, $decimals, $decimal_separator, $thousands_separator)
         return number_format($displayPrice / 100, 2, ',', '.');
@@ -142,6 +148,11 @@ class Product extends Model implements HasMedia
         // eski fiyatı (yani normal fiyatı) döndür.
         if ($minSalePrice && $minPrice && $minSalePrice < $minPrice) {
             
+            // KDV Ekleme (Eğer vat_rate varsa)
+            if ($this->vat_rate > 0) {
+                $minPrice = VatCalculator::calculate($minPrice, $this->vat_rate);
+            }
+
             // Kuruşu TL'ye çevir
             return number_format($minPrice / 100, 2, ',', '.');
         }
