@@ -167,7 +167,7 @@
                                         class="w-14 h-14 rounded-full border-4 transition-all duration-200
                                                peer-checked:border-pink-500 peer-checked:ring-4 peer-checked:ring-pink-200 peer-checked:scale-110 peer-checked:shadow-lg
                                                border-gray-300 group-hover:border-pink-300 group-hover:scale-105" 
-                                        style="background-color: {{ $color['code'] ?? '#ccc' }}">
+                                        style="@if(!empty($color['code_2'])) background: linear-gradient(45deg, {{ $color['code'] ?? '#ccc' }} 50%, {{ $color['code_2'] }} 50%); @else background-color: {{ $color['code'] ?? '#ccc' }}; @endif">
                                     </div>
                                     @if($selectedColor == $color['name'])
                                         <div class="absolute -top-1 -right-1 bg-pink-500 rounded-full p-1">

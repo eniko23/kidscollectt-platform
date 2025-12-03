@@ -57,14 +57,23 @@ class VariantsRelationManager extends RelationManager
         return $schema
             ->components([
                 TextInput::make('color_name')
-                    ->label('Renk Adı')
+                    ->label('Renk Adı 1')
                     ->maxLength(255)
                     ->required()
                     ->live(onBlur: true)
                     ->helperText('Önce renk adını girin, sonra bedenleri seçin'),
 
+                TextInput::make('color_name_2')
+                    ->label('Renk Adı 2')
+                    ->maxLength(255)
+                    ->nullable()
+                    ->live(onBlur: true),
+
                 ColorPicker::make('color_code')
-                    ->label('Renk Kodu'),
+                    ->label('Renk Kodu 1'),
+
+                ColorPicker::make('color_code_2')
+                    ->label('Renk Kodu 2'),
 
                 CheckboxList::make('sizes')
                     // ... (içerik aynı) ...
@@ -143,7 +152,8 @@ class VariantsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('size')->label('Beden')->searchable(),
                 TextColumn::make('color_name')->label('Renk')->searchable()->placeholder('Yok'),
-                ColorColumn::make('color_code')->label('Renk Kodu'),
+                ColorColumn::make('color_code')->label('Renk 1'),
+                ColorColumn::make('color_code_2')->label('Renk 2'),
 
                 TextInputColumn::make('price')->label('Normal Fiyat (Kuruş)')
                     ->rules(['required', 'numeric', 'min:0'])->sortable(),
@@ -192,6 +202,8 @@ class VariantsRelationManager extends RelationManager
                                 'size' => $size,
                                 'color_name' => $data['color_name'] ?? null,
                                 'color_code' => $data['color_code'] ?? null,
+                                'color_name_2' => $data['color_name_2'] ?? null,
+                                'color_code_2' => $data['color_code_2'] ?? null,
                                 'price' => $data['price'] ?? 0,
                                 'sale_price' => $data['sale_price'] ?? null,
                                 'bayii_price' => $data['bayii_price'] ?? null,

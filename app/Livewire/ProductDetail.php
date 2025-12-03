@@ -38,7 +38,9 @@ class ProductDetail extends Component
             ->map(function ($variant) {
                 return [
                     'name' => $variant->color_name,
-                    'code' => $variant->color_code
+                    'code' => $variant->color_code,
+                    'name_2' => $variant->color_name_2, // Yeni Alan
+                    'code_2' => $variant->color_code_2  // Yeni Alan
                 ];
             })
             ->filter(fn ($color) => !empty($color['name']))
