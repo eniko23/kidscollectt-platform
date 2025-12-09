@@ -34,6 +34,8 @@
             
             {{-- === YENİ FİYAT BLOKU (BURASI DEĞİŞTİ) === --}}
             @php
+                use App\Support\VatCalculator;
+
                 // Stokta olan varyantları bul
                 $inStockVariants = $product->variants()->where('stock', '>', 0);
                 
@@ -52,6 +54,15 @@
 
                 if ($minPriceInStock !== null) { // Stokta en az bir varyant varsa
                     
+                    // KDV Hesaplaması
+                    $vatRate = $product->vat_rate ?? 0;
+                    if ($vatRate > 0) {
+                        $minPriceInStock = VatCalculator::calculate($minPriceInStock, $vatRate);
+                        if ($minSalePriceInStock) {
+                            $minSalePriceInStock = VatCalculator::calculate($minSalePriceInStock, $vatRate);
+                        }
+                    }
+
                     $priceToShow = $minSalePriceInStock ?? $minPriceInStock;
                     
                     // Hatalı girişi engelle: İndirimli fiyat normalden yüksekse, normal fiyatı göster

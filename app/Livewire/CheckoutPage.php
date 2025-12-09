@@ -109,9 +109,11 @@ class CheckoutPage extends Component
         $this->tax = 0;
         foreach ($this->items as $item) {
             $product = $item['variant']->product;
-            $vatRate = $product->vat_rate ?? 20;
+            $vatRate = $product->vat_rate ?? 0;
             $itemSubtotal = $item['subtotal'];
-            $this->tax += (int) ($itemSubtotal * $vatRate / (100 + $vatRate));
+            // Kullanıcı isteği üzerine: KDV tutarı, KDV dahil fiyatın %vat_rate kadarı olacak.
+            // Örn: Fiyat 110 TL, KDV %10 -> KDV Tutarı = 11 TL (Normalde 10 TL olması gerekirken)
+            $this->tax += (int) ($itemSubtotal * ($vatRate / 100));
         }
 
         $this->total = $this->subtotal - $this->discount + $this->shipping;

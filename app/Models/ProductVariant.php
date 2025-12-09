@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia; // <-- EKLENDİ
 use Spatie\MediaLibrary\InteractsWithMedia; // <-- EKLENDİ
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Support\VatCalculator;
 
 class ProductVariant extends Model implements HasMedia
 {
@@ -51,7 +52,28 @@ class ProductVariant extends Model implements HasMedia
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    // --- YENİ YARDIMCI METODLAR (İNDİRİM İÇİN) ---
+    // --- YENİ YARDIMCI METODLAR (KDV ve İNDİRİM İÇİN) ---
+
+    /**
+     * KDV Dahil Normal Fiyat (Kuruş)
+     */
+    public function getGrossPriceAttribute()
+    {
+        return VatCalculator::calculate($this->price, $this->product?->vat_rate ?? 0);
+    }
+
+    /**
+     * KDV Dahil İndirimli Fiyat (Kuruş)
+     */
+    public function getGrossSalePriceAttribute()
+    {
+        if ($this->sale_price) {
+            return VatCalculator::calculate($this->sale_price, $this->product?->vat_rate ?? 0);
+        }
+        return null;
+    }
+
+    // --- MEVCUT YARDIMCI METODLAR (İNDİRİM İÇİN) ---
 
     /**
      * İndirimli fiyatın geçerli olup olmadığını kontrol eder.
