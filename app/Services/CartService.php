@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ProductVariant;
 use App\Models\Coupon;
+use App\Support\VatCalculator;
 use Illuminate\Support\Facades\Session;
 
 class CartService
@@ -121,8 +122,10 @@ class CartService
             if ($variant) {
                 
                 // --- 1. Doğru Fiyatı Hesapla ---
-                $normalPrice = $variant->price;
-                $salePrice = $variant->sale_price;
+                // KDV Dahil Fiyatları alıyoruz
+                $vatRate = $variant->product?->vat_rate ?? 0;
+                $normalPrice = VatCalculator::calculate($variant->price, $vatRate);
+                $salePrice = $variant->sale_price ? VatCalculator::calculate($variant->sale_price, $vatRate) : null;
 
                 // Geçerli bir indirim var mı? 
                 // (Dolu, 0'dan büyük ve normal fiyattan düşük mü?)
