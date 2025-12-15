@@ -26,11 +26,11 @@ class HomeController extends Controller
     $featuredProduct = $featuredProductId ? Product::find($featuredProductId) : null;
 
     // 4. Ana sayfadaki "Yeni Gelenler" (Tab 1) için son 8 ürünü çek
-    $latestProducts = Product::where('is_active', true)->latest()->take(8)->get();
+    $latestProducts = Product::with('variants')->where('is_active', true)->latest()->take(8)->get();
 
     // 5. "Çok Satanlar" (Tab 2) için (şimdilik) rastgele ürünleri çek
     // (İleride buraya gerçek satış verisi eklenebilir)
-    $bestsellerProducts = Product::where('is_active', true)->inRandomOrder()->take(8)->get();
+    $bestsellerProducts = Product::with('variants')->where('is_active', true)->inRandomOrder()->take(8)->get();
 
     // 6. Soldaki Kategori Menüsü (Sidebar) için kategorileri çek
     $categories = Category::whereNull('parent_id')->orderBy('name')->get();

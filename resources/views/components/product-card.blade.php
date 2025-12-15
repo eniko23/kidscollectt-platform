@@ -32,11 +32,12 @@
                 {{ $product->name }}
             </h3>
             
-            {{-- === YENİ FİYAT BLOKU (DAHA SAĞLAM MANTIK) === --}}
+            {{-- === YENİ FİYAT BLOKU (DAHA SAĞLAM MANTIK - V3) === --}}
             @php
                 use App\Support\VatCalculator;
 
-                // 1. Stokta olan tüm varyantları çekiyoruz (optimize edilebilir ama şimdilik güvenli yol)
+                // 1. Stokta olan tüm varyantları çekiyoruz
+                // Eager loaded ise veritabanı sorgusu yapmaz.
                 $variants = $product->variants->where('stock', '>', 0);
                 
                 $bestPrice = null;     // Gösterilecek nihai fiyat
@@ -48,10 +49,13 @@
 
                     // 2. En ucuz varyantı bul (İndirimli fiyatı varsa onu, yoksa normal fiyatı baz al)
                     foreach ($variants as $variant) {
-                        $price = $variant->price;
-                        $salePrice = ($variant->sale_price && $variant->sale_price > 0 && $variant->sale_price < $price)
-                                     ? $variant->sale_price
-                                     : null;
+                        $price = (int) $variant->price;
+                        $salePriceRaw = $variant->sale_price;
+
+                        // İndirim geçerli mi? (null değil, 0'dan büyük, normal fiyattan küçük)
+                        $hasDiscount = (!is_null($salePriceRaw) && (int)$salePriceRaw > 0 && (int)$salePriceRaw < $price);
+
+                        $salePrice = $hasDiscount ? (int)$salePriceRaw : null;
 
                         // Bu varyantın müşteriye maliyeti nedir?
                         $effectivePrice = $salePrice ?? $price;
@@ -66,10 +70,12 @@
                     if ($selectedVariant) {
                         $vatRate = $product->vat_rate ?? 0;
 
-                        $rawPrice = $selectedVariant->price;
-                        $rawSalePrice = ($selectedVariant->sale_price && $selectedVariant->sale_price > 0 && $selectedVariant->sale_price < $rawPrice)
-                                        ? $selectedVariant->sale_price
-                                        : null;
+                        $rawPrice = (int) $selectedVariant->price;
+                        $rawSalePriceVal = $selectedVariant->sale_price;
+
+                        // Tekrar kontrol: İndirim geçerli mi?
+                        $hasDiscount = (!is_null($rawSalePriceVal) && (int)$rawSalePriceVal > 0 && (int)$rawSalePriceVal < $rawPrice);
+                        $rawSalePrice = $hasDiscount ? (int)$rawSalePriceVal : null;
 
                         // KDV Ekle
                         if ($vatRate > 0) {
@@ -81,9 +87,11 @@
 
                         // Gösterilecek fiyatları ayarla
                         if ($rawSalePrice) {
+                            // İndirim VAR
                             $bestPrice = number_format($rawSalePrice / 100, 2, ',', '.');
                             $bestOldPrice = number_format($rawPrice / 100, 2, ',', '.');
                         } else {
+                            // İndirim YOK
                             $bestPrice = number_format($rawPrice / 100, 2, ',', '.');
                         }
                     }
