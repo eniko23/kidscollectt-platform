@@ -242,6 +242,7 @@
                 x-transition:leave-start="translate-x-0"
                 x-transition:leave-end="-translate-x-full"
                 class="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl h-full overflow-y-auto"
+                style="background-color: white;"
             >
                 {{-- Menü Başlığı ve Kapatma Butonu --}}
                 <div class="flex items-center justify-between px-6 py-5 border-b border-pink-100 bg-pink-50">
