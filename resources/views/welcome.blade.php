@@ -8,7 +8,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-                <aside class="lg:col-span-1 p-6 bg-white rounded-xl shadow-lg h-fit border border-gray-200 sticky top-28">
+                <aside class="hidden lg:block lg:col-span-1 p-6 bg-white rounded-xl shadow-lg h-fit border border-gray-200 sticky top-28">
                     <h2 class="text-xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-pink-300">
                         Kategoriler
                     </h2>
