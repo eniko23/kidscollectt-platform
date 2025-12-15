@@ -55,7 +55,7 @@ $user_name = iconv('UTF-8', 'ASCII//TRANSLIT', $user_name);
         foreach ($order->items as $item) {
             $user_basket[] = [
                 $item->variant->product->name ?? 'Ürün',
-                (string) ($item->price / 100), // number_format YOK
+                number_format($item->price / 100, 2, '.', ''), // Kuruş ayracı nokta (.) olmalı
                 (int) $item->quantity
             ];
         }
@@ -65,9 +65,10 @@ $user_name = iconv('UTF-8', 'ASCII//TRANSLIT', $user_name);
         $user_ip = request()->ip();
 
 
+
         $timeout_limit  = 30;
-        $debug_on       = 0;
-        $test_mode      = 0;
+        $debug_on       = 1;
+        $test_mode      = 1;
         $no_installment = 0;
         $max_installment = 0;
         $currency = 'TL';

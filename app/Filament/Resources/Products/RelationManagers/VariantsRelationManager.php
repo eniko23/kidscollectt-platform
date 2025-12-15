@@ -133,6 +133,11 @@ class VariantsRelationManager extends RelationManager
                     ->numeric()
                     ->default(1),
 
+                TextInput::make('barcode')
+                    ->label('Barkod')
+                    ->nullable()
+                    ->maxLength(255),
+
                 SpatieMediaLibraryFileUpload::make('variant_image')
                     ->label('Varyanta Özel Resim')
                     ->collection('variant-images') 
@@ -178,6 +183,9 @@ class VariantsRelationManager extends RelationManager
 
                 TextColumn::make('sku')->label('SKU')->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                
+                TextColumn::make('barcode')->label('Barkod')->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -209,6 +217,7 @@ class VariantsRelationManager extends RelationManager
                                 'bayii_price' => $data['bayii_price'] ?? null,
                                 'stock' => $data['stock'] ?? 0,
                                 'min_quantity' => $data['min_quantity'] ?? 1,
+                                'barcode' => $data['barcode'] ?? null,
                             ];
                             
                             $variant = $model::create($variantData);

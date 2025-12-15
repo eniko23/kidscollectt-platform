@@ -209,7 +209,7 @@ class CheckoutPage extends Component
 
         if ($this->paymentMethod === 'credit_card') {
             session(['order_id_for_payment' => $order->id]);
-            return redirect()->route('payment.process');
+            return redirect()->route('payment.show', ['order' => $order->id]);
         } else {
             session()->flash('order_created', $order->id);
             return redirect()->route('payment.thank-you');
@@ -244,6 +244,10 @@ class CheckoutPage extends Component
                 }
 
                 $order = Order::create($orderData);
+
+                if (!$order) {
+                    throw new \Exception("Sipariş veritabanına kaydedilemedi.");
+                }
 
                 foreach ($this->items as $item) {
                     OrderItem::create([
