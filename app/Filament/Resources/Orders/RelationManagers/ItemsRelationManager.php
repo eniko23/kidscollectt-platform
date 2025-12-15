@@ -113,8 +113,7 @@ class ItemsRelationManager extends RelationManager
 
                 TextColumn::make('price')
                     ->label('Birim Fiyat')
-                    ->numeric()
-                    ->money('TRY') // Kuruşları (19999) -> 199,99 TL'ye çevir
+                    ->formatStateUsing(fn ($state) => number_format($state / 100, 2, ',', '.') . ' ₺')
                     ->sortable(),
             ])
             ->filters([

@@ -68,8 +68,7 @@ class OrdersTable
                 // 💰 TOPLAM TUTAR
                 TextColumn::make('total_price')
                     ->label('Toplam Tutar')
-                    ->numeric()
-                    ->money('TRY')
+                    ->formatStateUsing(fn ($state) => number_format($state / 100, 2, ',', '.') . ' ₺')
                     ->sortable(),
 
                 // 📅 TARİH + SAAT (Türkçe biçim)
