@@ -241,11 +241,11 @@
                 x-transition:leave="transition ease-in-out duration-300 transform"
                 x-transition:leave-start="translate-x-0"
                 x-transition:leave-end="-translate-x-full"
-                class="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl h-full overflow-y-auto"
-                style="background-color: white;"
+                class="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl h-full overflow-y-auto z-50"
+                style="background-color: white !important;"
             >
                 {{-- Menü Başlığı ve Kapatma Butonu --}}
-                <div class="flex items-center justify-between px-6 py-5 border-b border-pink-100 bg-pink-50">
+                <div class="flex items-center justify-between px-6 py-5 border-b border-pink-100 bg-pink-50" style="background-color: #fdf2f8;">
                     <span class="text-xl font-brand font-bold text-pink-600">Menü</span>
                     <button @click="mobileMenuOpen = false" type="button" class="-mr-2 p-2 rounded-md text-gray-500 hover:text-pink-600 hover:bg-white transition-colors">
                         <span class="sr-only">Menüyü Kapat</span>
@@ -256,7 +256,7 @@
                 </div>
 
                 {{-- Menü Linkleri --}}
-                <nav class="px-4 py-6 space-y-2">
+                <nav class="px-4 py-6 space-y-2 bg-white flex-1" style="background-color: white;">
                     
                     {{-- Ana Kategoriler (Sidebar'dan Kopyalandı) --}}
                     <a href="{{ route('products.index') }}" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors group">
