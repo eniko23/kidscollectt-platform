@@ -32,7 +32,7 @@
                 {{ $product->name }}
             </h3>
             
-            {{-- === YENİ FİYAT BLOKU (DAHA SAĞLAM MANTIK - V3) === --}}
+            {{-- === YENİ FİYAT BLOKU (DAHA SAĞLAM MANTIK) === --}}
             @php
                 use App\Support\VatCalculator;
 
