@@ -107,10 +107,10 @@
                 @if($bestPrice)
                     {{-- İNDİRİM VARSA (Eski fiyat doluysa) --}}
                     @if($bestOldPrice)
-                        <span class="text-pink-600">
+                        <span class="text-pink-600 block">
                             {{ $bestPrice }} TL
                         </span>
-                        <span class="text-gray-400 line-through text-base">
+                        <span class="text-gray-400 line-through text-sm block">
                             {{ $bestOldPrice }} TL
                         </span>
                     @else

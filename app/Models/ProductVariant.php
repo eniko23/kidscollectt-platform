@@ -32,6 +32,7 @@ class ProductVariant extends Model implements HasMedia
         'bayii_price', // <-- EKSİKTİ, EKLENDİ
         'stock',
         'sku',
+        'barcode',
     ];
 
     /**

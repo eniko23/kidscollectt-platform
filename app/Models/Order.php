@@ -20,6 +20,7 @@ class Order extends Model
         'status',
         'shipping_address',
         'payment_method',
+        'payment_transaction_id',
     ];
 
     /**

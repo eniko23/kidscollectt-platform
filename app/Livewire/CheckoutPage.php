@@ -245,6 +245,10 @@ class CheckoutPage extends Component
 
                 $order = Order::create($orderData);
 
+                if (!$order) {
+                    throw new \Exception("Sipariş veritabanına kaydedilemedi.");
+                }
+
                 foreach ($this->items as $item) {
                     OrderItem::create([
                         'order_id' => $order->id,
