@@ -83,17 +83,17 @@
 
             {{-- 
                 HTML Çıktısı: 
-                'h-8' (yükseklik) sınıfı, indirimli ve indirimsiz ürünler 
-                aynı satırdayken "kayma" (layout shift) yaşanmasını engeller.
+                'min-h-[3.5rem]' sınıfı, iki satırlık fiyat alanını kapsar.
+                Flex column yapısı ile fiyatlar alt alta ortalanır.
             --}}
-            <p class="mt-3 text-xl font-extrabold text-gray-900 h-8 flex flex-col items-center justify-center">
+            <p class="mt-3 text-xl font-extrabold text-gray-900 min-h-[3.5rem] flex flex-col items-center justify-center">
                 @if($displayPrice)
                     {{-- İNDİRİM VARSA (Eski fiyat doluysa) --}}
                     @if($displayOldPrice)
                         <span class="text-pink-600">
                             {{ $displayPrice }} TL
                         </span>
-                        <span class="text-gray-400 line-through text-base ml-1.5 -mt-1">
+                        <span class="text-gray-400 line-through text-base">
                             {{ $displayOldPrice }} TL
                         </span>
                     @else
