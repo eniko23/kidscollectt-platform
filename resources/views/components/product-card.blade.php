@@ -32,51 +32,60 @@
                 {{ $product->name }}
             </h3>
             
-            {{-- === YENİ FİYAT BLOKU (BURASI DEĞİŞTİ) === --}}
+            {{-- === YENİ FİYAT BLOKU (DAHA SAĞLAM MANTIK) === --}}
             @php
                 use App\Support\VatCalculator;
 
-                // Stokta olan varyantları bul
-                $inStockVariants = $product->variants()->where('stock', '>', 0);
+                // 1. Stokta olan tüm varyantları çekiyoruz (optimize edilebilir ama şimdilik güvenli yol)
+                $variants = $product->variants->where('stock', '>', 0);
                 
-                // Stoktakilerin en düşük normal fiyatını bul
-                $minPriceInStock = $inStockVariants->min('price');
-                
-                // Stoktakilerin en düşük indirimli fiyatını bul (0'dan büyük olmalı)
-                $minSalePriceInStock = $product->variants()
-                                    ->where('stock', '>', 0)
-                                    ->whereNotNull('sale_price')
-                                    ->where('sale_price', '>', 0)
-                                    ->min('sale_price');
-                
-                $displayPrice = null;
-                $displayOldPrice = null;
+                $bestPrice = null;     // Gösterilecek nihai fiyat
+                $bestOldPrice = null;  // Gösterilecek üstü çizili fiyat (varsa)
 
-                if ($minPriceInStock !== null) { // Stokta en az bir varyant varsa
-                    
-                    // KDV Hesaplaması
-                    $vatRate = $product->vat_rate ?? 0;
-                    if ($vatRate > 0) {
-                        $minPriceInStock = VatCalculator::calculate($minPriceInStock, $vatRate);
-                        if ($minSalePriceInStock) {
-                            $minSalePriceInStock = VatCalculator::calculate($minSalePriceInStock, $vatRate);
+                if ($variants->isNotEmpty()) {
+                    $lowestEffectivePrice = null;
+                    $selectedVariant = null;
+
+                    // 2. En ucuz varyantı bul (İndirimli fiyatı varsa onu, yoksa normal fiyatı baz al)
+                    foreach ($variants as $variant) {
+                        $price = $variant->price;
+                        $salePrice = ($variant->sale_price && $variant->sale_price > 0 && $variant->sale_price < $price)
+                                     ? $variant->sale_price
+                                     : null;
+
+                        // Bu varyantın müşteriye maliyeti nedir?
+                        $effectivePrice = $salePrice ?? $price;
+
+                        if ($lowestEffectivePrice === null || $effectivePrice < $lowestEffectivePrice) {
+                            $lowestEffectivePrice = $effectivePrice;
+                            $selectedVariant = $variant;
                         }
                     }
 
-                    $priceToShow = $minSalePriceInStock ?? $minPriceInStock;
-                    
-                    // Hatalı girişi engelle: İndirimli fiyat normalden yüksekse, normal fiyatı göster
-                    if ($minSalePriceInStock && $minPriceInStock && $minSalePriceInStock >= $minPriceInStock) {
-                        $priceToShow = $minPriceInStock;
-                    }
+                    // 3. Seçilen varyantın fiyatlarını hazırla
+                    if ($selectedVariant) {
+                        $vatRate = $product->vat_rate ?? 0;
 
-                    // Gösterilecek fiyatı formatla
-                    $displayPrice = number_format($priceToShow / 100, 2, ',', '.');
-                    
-                    // Gerçek bir indirim olup olmadığını kontrol et
-                    if ($minSalePriceInStock && $minPriceInStock && $minSalePriceInStock < $minPriceInStock) {
-                        // Varsa, eski fiyatı (normal fiyat) formatla
-                        $displayOldPrice = number_format($minPriceInStock / 100, 2, ',', '.');
+                        $rawPrice = $selectedVariant->price;
+                        $rawSalePrice = ($selectedVariant->sale_price && $selectedVariant->sale_price > 0 && $selectedVariant->sale_price < $rawPrice)
+                                        ? $selectedVariant->sale_price
+                                        : null;
+
+                        // KDV Ekle
+                        if ($vatRate > 0) {
+                            $rawPrice = VatCalculator::calculate($rawPrice, $vatRate);
+                            if ($rawSalePrice) {
+                                $rawSalePrice = VatCalculator::calculate($rawSalePrice, $vatRate);
+                            }
+                        }
+
+                        // Gösterilecek fiyatları ayarla
+                        if ($rawSalePrice) {
+                            $bestPrice = number_format($rawSalePrice / 100, 2, ',', '.');
+                            $bestOldPrice = number_format($rawPrice / 100, 2, ',', '.');
+                        } else {
+                            $bestPrice = number_format($rawPrice / 100, 2, ',', '.');
+                        }
                     }
                 }
             @endphp
@@ -87,23 +96,23 @@
                 Flex column yapısı ile fiyatlar alt alta ortalanır.
             --}}
             <p class="mt-3 text-xl font-extrabold text-gray-900 min-h-[3.5rem] flex flex-col items-center justify-center">
-                @if($displayPrice)
+                @if($bestPrice)
                     {{-- İNDİRİM VARSA (Eski fiyat doluysa) --}}
-                    @if($displayOldPrice)
+                    @if($bestOldPrice)
                         <span class="text-pink-600">
-                            {{ $displayPrice }} TL
+                            {{ $bestPrice }} TL
                         </span>
                         <span class="text-gray-400 line-through text-base">
-                            {{ $displayOldPrice }} TL
+                            {{ $bestOldPrice }} TL
                         </span>
                     @else
                         {{-- İNDİRİM YOKSA (Sadece normal fiyat) --}}
                         <span class="text-gray-900">
-                            {{ $displayPrice }} TL
+                            {{ $bestPrice }} TL
                         </span>
                     @endif
                 @else
-                    {{-- STOKTA YOKSA ($displayPrice = null ise) --}}
+                    {{-- STOKTA YOKSA ($bestPrice = null ise) --}}
                     <span class="text-gray-500 font-medium text-md">Stokta Yok</span>
                 @endif
             </p>
