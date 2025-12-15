@@ -10,6 +10,8 @@ use App\Http\Controllers\ProductController;
 use App\Models\Category;
 
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\PaymentController;
+
 
 // ===================================================================
 // VİTRİN (ÖN YÜZ) ROTALARI
@@ -27,6 +29,39 @@ Route::get('/sepet', function () {
 Route::get('/odeme', function () {
     return view('checkout.index');
 })->name('checkout.index');
+
+
+// Ödeme Sayfası (Kullanıcı "Ödeme Yap" deyince buraya gelir)
+Route::get('/odeme-yap/{order}', [PaymentController::class, 'payment'])->name('payment.show');
+
+// PayTR Callback (PayTR sunucusu buraya istek atar - POST olmalı!)
+// Bu rotayı CSRF korumasından hariç tutmamız gerekecek (Adım 3'te anlatacağım)
+Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+
+// Sadece Yöneticiler Erişebilmeli!
+Route::post('/admin/orders/{order}/refund', [PaymentController::class, 'refund'])
+    ->name('admin.orders.refund')
+    ->middleware(['auth']); // Veya 'admin' middleware'i
+
+Route::get('/odeme-basarili', function () {
+    // Session'dan ID alıyoruz
+    $orderId = session('order_id_for_payment') ?? session('order_created');
+
+    // DÜZELTME BURADA:
+    // 'thank-you' yerine 'payment.thank-you' yazıyoruz.
+    // Bu, "payment klasörünün içindeki thank-you dosyası" demektir.
+    return view('payment.thank-you', ['order_id' => $orderId]); 
+    
+})->name('payment.success');
+
+// Başarılı / Başarısız Dönüş Sayfaları
+Route::get('/odeme/basarili', function() {
+    return view('payment.success'); // Basit bir "Teşekkürler" sayfası
+})->name('payment.success');
+
+Route::get('/odeme/basarisiz', function() {
+    return view('payment.fail'); // "Ödeme Alınamadı" sayfası
+})->name('payment.fail');
 
 
 // --- YENİ EKLENECEK ROTA (SİPARİŞ BAŞARILI) ---

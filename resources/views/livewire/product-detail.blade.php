@@ -319,6 +319,130 @@
                     </div>
                 @endif
             </div>
+
+            </div> 
+
+            {{-- ========================================== --}}
+            {{-- PAYTR TAKSİT TABLOSU BAŞLANGIÇ --}}
+            {{-- ========================================== --}}
+            
+            {{-- ========================================== --}}
+            {{-- PAYTR TAKSİT TABLOSU (İNDİRİM + KDV FİXLİ) --}}
+            {{-- ========================================== --}}
+            
+            @php
+                $paytrAmount = "0.00"; 
+                $basePrice = 0; // KDV Hariç, İndirim Dahil Ham Fiyat
+                $vatRate = $product->vat_rate ?? 0; // KDV Oranı (Örn: 10, 20)
+
+                // --- 1. EN DOĞRU FİYATI SEÇME MANTIĞI ---
+                
+                if ($selectedVariant) {
+                    // Varyant Seçiliyse
+                    $p = $selectedVariant->price;      // Normal Fiyat
+                    $s = $selectedVariant->sale_price; // İndirimli Fiyat
+
+                    // İndirim geçerli mi? (0'dan büyük ve normalden küçük olmalı)
+                    if ($s && $s > 0 && $s < $p) {
+                        $basePrice = $s;
+                    } else {
+                        $basePrice = $p;
+                    }
+                } 
+                elseif ($variants && $variants->count() > 0) {
+                    // Varyant Seçili Değilse: En ucuz varyantı bul
+                    $basePrice = $variants->map(function($v) {
+                        $p = $v->price;
+                        $s = $v->sale_price;
+                        // Her varyant için efektif fiyatı bul
+                        return ($s && $s > 0 && $s < $p) ? $s : $p;
+                    })->min();
+                }
+                else {
+                    // Varyantsız Ürün
+                    $p = $product->price;
+                    $s = $product->sale_price ?? 0; // Ürün modelinde sale_price olmayabilir, kontrol et
+                    
+                    if ($s && $s > 0 && $s < $p) {
+                        $basePrice = $s;
+                    } else {
+                        $basePrice = $p;
+                    }
+                }
+
+                // Null kontrolü (Hata almamak için)
+                $basePrice = (float)($basePrice ?? 0);
+
+                // --- 2. KDV EKLEME (Eğer fiyatlar KDV hariç tutuluyorsa) ---
+                // "Ham Fiyat: 55 | Hesaplanan: 55" ama ekranda "0.61 TL" görüyorsan
+                // Bu demektir ki 55 kuruşa %10 KDV ekleniyor (55 * 1.10 = 60.5 ~ 61)
+                
+                if ($vatRate > 0) {
+                    $basePrice = $basePrice * (1 + ($vatRate / 100));
+                }
+
+                // --- 3. FORMATLAMA (TL'ye Çevirme) ---
+                // Veritabanı 0.61 TL'yi "61" (kuruş) olarak tutuyorsa 100'e bölmeliyiz.
+                // Ama yanlışlıkla "0.61" (TL) tutulmuşsa dokunmamalıyız.
+                
+                if ($basePrice < 10) {
+                    // Zaten TL cinsinden küçük bir sayı (Örn: 0.61)
+                    $paytrAmount = number_format($basePrice, 2, '.', '');
+                } else {
+                    // Kuruş cinsinden (Örn: 61 veya 28111)
+                    $paytrAmount = number_format($basePrice / 100, 2, '.', '');
+                }
+            @endphp
+
+            @if((float)$paytrAmount > 0)
+                <div class="mt-8">
+                    <details class="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md open:ring-2 open:ring-pink-100">
+                        <summary class="flex items-center justify-between p-4 cursor-pointer list-none select-none bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-pink-100 p-2 rounded-lg text-pink-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-gray-900">Taksit Seçenekleri</h3>
+                                    {{-- Debug: Doğru fiyatı görüp görmediğimizi kontrol edelim (Sonra silebilirsin) --}}
+                                    {{-- <p class="text-xs text-gray-400">Hesaplanan Tutar: {{ $paytrAmount }} TL</p> --}}
+                                    <p class="text-xs text-gray-500">Kartlara özel taksit oranlarını görmek için tıklayın</p>
+                                </div>
+                            </div>
+                            <span class="transform transition-transform duration-300 group-open:rotate-180 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        </summary>
+
+                        <div class="p-4 bg-white border-t border-gray-100">
+                            <div class="max-h-96 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                                <style>
+                                    #paytr_taksit_tablosu * { box-sizing: content-box !important; }
+                                    #paytr_taksit_tablosu { width: 100% !important; text-align: center; }
+                                    .taksit-tablosu-wrapper {
+                                        width: 100% !important; max-width: 350px !important; margin: 0 auto 15px auto !important;
+                                        padding: 10px !important; border: 1px solid #e5e7eb !important; border-radius: 12px !important;
+                                        background-color: #fff !important; display: block !important; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                                    }
+                                    .taksit-tutar-wrapper { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; padding: 8px 5px !important; border-bottom: 1px solid #f3f4f6 !important; margin: 0 !important; background-color: transparent !important; }
+                                    .taksit-tutar-wrapper:last-child { border-bottom: none !important; }
+                                    .taksit-tutari-text { float: none !important; width: auto !important; color: #6b7280 !important; font-size: 13px !important; font-weight: 500 !important; text-align: left !important; }
+                                    .taksit-tutari { float: none !important; width: auto !important; color: #111827 !important; font-size: 13px !important; font-weight: bold !important; border: none !important; text-align: right !important; }
+                                    .taksit-logo img { max-height: 30px !important; display: inline-block !important; }
+                                </style>
+
+                                <div id="paytr_taksit_tablosu"></div>
+                                <script src="https://www.paytr.com/odeme/taksit-tablosu/v2?token=26ffd86457fdc453f9dc7b88915378564946da40957a710228945a468bee45d8&merchant_id=527634&amount={{ $paytrAmount }}&taksit=0&tumu=0"></script>
+                            
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            @endif
         </div>
     </div>
 </div>
