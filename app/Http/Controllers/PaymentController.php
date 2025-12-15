@@ -55,7 +55,7 @@ $user_name = iconv('UTF-8', 'ASCII//TRANSLIT', $user_name);
         foreach ($order->items as $item) {
             $user_basket[] = [
                 $item->variant->product->name ?? 'Ürün',
-                (string) ($item->price / 100), // number_format YOK
+                number_format($item->price / 100, 2, '.', ''), // Kuruş ayracı nokta (.) olmalı
                 (int) $item->quantity
             ];
         }
@@ -63,6 +63,9 @@ $user_name = iconv('UTF-8', 'ASCII//TRANSLIT', $user_name);
 
         // IP (local / prod güvenli)
         $user_ip = request()->ip();
+        if ($user_ip === '::1') {
+            $user_ip = '127.0.0.1';
+        }
 
 
         $timeout_limit  = 30;
