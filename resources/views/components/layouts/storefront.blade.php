@@ -377,21 +377,7 @@
         </div>
     </footer>
 
-    {{-- Sepete Ekleme Bildirimi --}}
-    <div 
-        x-data="{ show: false, message: '' }"
-        x-on:product-added-to-cart.window="
-            message = `Ürün ('${event.detail.variant_name}') sepete eklendi!`;
-            show = true;
-            setTimeout(() => show = false, 3000); // 3 saniye sonra mesajı gizle
-        "
-        x-show="show"
-        x-transition
-        style="display: none;"
-        class="fixed bottom-4 right-4 z-50 rounded-md bg-green-600 px-4 py-3 text-white shadow-lg"
-    >
-        <p x-text="message"></p>
-    </div>
+    
 
     @livewireScriptConfig
 

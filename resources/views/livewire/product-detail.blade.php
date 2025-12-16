@@ -263,7 +263,7 @@
                     <div class="flex items-center gap-4">
                         <button 
                             wire:click="decrementQuantity" 
-                            :disabled="$quantity <= ($selectedVariant->min_quantity ?? 1)" 
+                            @if($quantity <= ($selectedVariant->min_quantity ?? 1)) disabled @endif
                             class="w-12 h-12 rounded-full bg-blue-500 text-white font-bold text-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-110 shadow-lg">
                             -
                         </button>
