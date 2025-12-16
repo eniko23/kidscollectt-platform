@@ -27,15 +27,26 @@ class PaymentController extends Controller
         $merchant_salt = 'Zkz9BtGnmL1N4WzL';
 
         // Müşteri Bilgileri
-        $email = Auth::user()->email ?? 'musteri@email.com';
+        $email = $user->email ?? 'misafir@kidscollectt.com';
+        
+        $user_name = Auth::user()->name ?? 'Misafir Kullanıcı';
+        // Basitçe ASCII'ye çevirip garantiye alalım
+        $user_name = iconv('UTF-8', 'ASCII//TRANSLIT', $user_name) ?: 'Musteri';
 
-        // ÖNEMLİ: KURUŞ + INT
-        $payment_amount = (int) $order->total_price;
+        // Adres: Kullanıcı tablosunda değil, Sipariş tablosunda aranır
+        $user_address = $order->shipping_address ?? 'Teslimat adresi girilmedi';
+        
+        // Telefon: Senin users tablondaki 'phone' sütunu
+        $user_phone = $user->phone ?? '05555555555';
 
-        // Sipariş No
+        // --- Tutar ---
+        // Veritabanında kuruş tutuyorsan (örn: 59990) direkt al.
+        // Eğer TL tutuyorsan (599.90) * 100 yapmalısın.
+        $payment_amount = (int) $order->total_price; 
+
         $merchant_oid = $order->id . 'RND' . time();
-
-        $user_name = trim(Auth::user()->name ?? '');
+        $merchant_ok_url   = route('payment.success');
+        $merchant_fail_url = route('payment.fail');
 
 if ($user_name === '' || strlen($user_name) < 2) {
     $user_name = 'Musteri';

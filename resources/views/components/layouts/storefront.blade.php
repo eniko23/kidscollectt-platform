@@ -69,14 +69,7 @@
             <div class="flex items-center justify-between h-20">
 
                 {{-- Hamburger Menü Butonu (Mobil) --}}
-                <div class="flex items-center lg:hidden mr-4">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="text-gray-600 hover:text-pink-600 focus:outline-none p-2 rounded-md hover:bg-pink-50 transition-colors">
-                        <span class="sr-only">Menüyü Aç</span>
-                        <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
+                
                 
                 {{-- Logo (Animasyonlu) --}}
                 <div class="flex-1 flex items-center">
@@ -183,6 +176,33 @@
 
             </div>
             
+            {{-- Kategori Menüsü (Mobil - Kaydırılabilir) --}}
+            <div class="flex justify-center py-3 border-t-2 border-pink-100 lg:hidden overflow-x-auto no-scrollbar">
+                <div class="flex gap-4 sm:gap-6 px-4 min-w-max">
+                    @if(isset($categories) && $categories->count() > 0)
+                        @foreach($categories as $category)
+                            <a href="{{ route('category.show', $category) }}" 
+                               class="flex items-center gap-2 text-sm sm:text-base font-bold text-gray-700 hover:text-pink-600 px-4 py-2 rounded-full hover:bg-pink-50 transition-all duration-200 hover:scale-105">
+                                
+                                {{-- ❗ YENİ İKONLAR ❗ (Kategorilerine göre) --}}
+                                @if(Str::contains($category->name, ['Kız', 'Kadın']))
+                                    <span class="text-pink-500">♀</span>
+                                @elseif(Str::contains($category->name, ['Erkek']))
+                                    <span class="text-blue-500">♂</span>
+                                @elseif(Str::contains($category->name, ['Bebek']))
+                                    <span class="text-purple-500">🍼</span>
+                                @else
+                                    <span class="text-gray-400">🏷️</span>
+                                @endif
+                                {{-- ❗ İKONLAR BİTTİ ❗ --}}
+
+                                {{ $category->name }}
+                            </a>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+            
             {{-- Kategori Menüsü (İkonlu) --}}
             <div class="flex justify-center py-3 border-t-2 border-pink-100 hidden lg:flex">
                 <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
@@ -217,7 +237,6 @@
             class="fixed inset-0 z-50 flex lg:hidden" 
             role="dialog" 
             aria-modal="true"
-            style="display: none;"
         >
             {{-- Arkaplan Karartma --}}
             <div 
@@ -241,10 +260,10 @@
                 x-transition:leave="transition ease-in-out duration-300 transform"
                 x-transition:leave-start="translate-x-0"
                 x-transition:leave-end="-translate-x-full"
-                class="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl h-full overflow-y-auto"
+                class="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl h-full overflow-y-auto z-50"
             >
                 {{-- Menü Başlığı ve Kapatma Butonu --}}
-                <div class="flex items-center justify-between px-6 py-5 border-b border-pink-100 bg-pink-50">
+                <div class="flex items-center justify-between px-6 py-5 border-b border-pink-100 bg-pink-50" style="background-color: #fdf2f8;">
                     <span class="text-xl font-brand font-bold text-pink-600">Menü</span>
                     <button @click="mobileMenuOpen = false" type="button" class="-mr-2 p-2 rounded-md text-gray-500 hover:text-pink-600 hover:bg-white transition-colors">
                         <span class="sr-only">Menüyü Kapat</span>
@@ -255,7 +274,7 @@
                 </div>
 
                 {{-- Menü Linkleri --}}
-                <nav class="px-4 py-6 space-y-2">
+                <nav class="px-4 py-6 space-y-2 bg-white flex-1" style="background-color: white;">
                     
                     {{-- Ana Kategoriler (Sidebar'dan Kopyalandı) --}}
                     <a href="{{ route('products.index') }}" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors group">

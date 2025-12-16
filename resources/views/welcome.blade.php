@@ -18,27 +18,23 @@
                                 <span class="w-8 h-8 mr-3 rounded-full bg-gray-100 flex items-center justify-center text-lg group-hover:bg-gray-200 transition-all">🛍️</span>
                                 Tüm Ürünler
                             </a></li>
-                            <li><a href="/kategori/en-cok-satanlar" class="flex items-center group font-medium text-gray-700 hover:text-pink-600 transition duration-200">
+                            <li><a href="/urunler" class="flex items-center group font-medium text-gray-700 hover:text-pink-600 transition duration-200">
                                 <span class="w-8 h-8 mr-3 rounded-full bg-orange-100 flex items-center justify-center text-lg group-hover:bg-orange-200 transition-all">🔥</span>
                                 En Çok Satanlar
                             </a></li>
-                            <li><a href="/kategori/erkek-giyim" class="flex items-center group font-medium text-gray-700 hover:text-blue-600 transition duration-200">
+                            <li><a href="/kategori/erkek-cocuk-giyim" class="flex items-center group font-medium text-gray-700 hover:text-blue-600 transition duration-200">
                                 <span class="w-8 h-8 mr-3 rounded-full bg-blue-100 flex items-center justify-center text-lg group-hover:bg-blue-200 transition-all">👦</span>
                                 Erkek Çocuk
                             </a></li>
-                            <li><a href="/kategori/kiz-cocuk" class="flex items-center group font-medium text-gray-700 hover:text-pink-600 transition duration-200">
+                            <li><a href="/kategori/kız-çocuk-giyim" class="flex items-center group font-medium text-gray-700 hover:text-pink-600 transition duration-200">
                                 <span class="w-8 h-8 mr-3 rounded-full bg-pink-100 flex items-center justify-center text-lg group-hover:bg-pink-200 transition-all">👧</span>
                                 Kız Çocuk
                             </a></li>
-                            <li><a href="/kategori/yetiskin" class="flex items-center group font-medium text-gray-700 hover:text-purple-600 transition duration-200">
+                            <li><a href="/kategori/yetişkin-giyim" class="flex items-center group font-medium text-gray-700 hover:text-purple-600 transition duration-200">
                                 <span class="w-8 h-8 mr-3 rounded-full bg-purple-100 flex items-center justify-center text-lg group-hover:bg-purple-200 transition-all">👩</span>
                                 Yetişkin
                             </a></li>
-                            <li><a href="/kategori/aile-kombinleri" class="flex items-center group font-medium text-gray-700 hover:text-green-600 transition duration-200">
-                                <span class="w-8 h-8 mr-3 rounded-full bg-green-100 flex items-center justify-center text-lg group-hover:bg-green-200 transition-all">👨‍👩‍👧‍👦</span>
-                                Aile Kombinleri
-                            </a></li>
-                            <li><a href="/kategori/indirimdekiler" class="flex items-center group font-medium text-red-700 hover:text-red-600 transition duration-200">
+                            <li><a href="/urunler" class="flex items-center group font-medium text-red-700 hover:text-red-600 transition duration-200">
                                 <span class="w-8 h-8 mr-3 rounded-full bg-red-100 flex items-center justify-center text-lg group-hover:bg-red-200 transition-all">🏷️</span>
                                 İndirimdekiler
                             </a></li>
@@ -240,48 +236,131 @@
 @endif
 
 
-        {{-- Instagram Galerisi --}}
-        <section class="bg-gray-50 py-16 sm:py-24 border-t border-gray-200">
+        {{-- İndirimdeki Ürünler (Carousel) --}}
+        @if(isset($discountedProducts) && $discountedProducts->count() > 0)
+        <section class="bg-red-50 py-16 sm:py-24 border-t border-red-100 overflow-hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-3xl font-bold text-gray-900 text-center mb-12 font-brand">
-                    #KidsCollectt İle Sizden Gelenler
-                </h2>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <a href="#" class="group block aspect-square rounded-xl overflow-hidden shadow-lg relative transform hover:scale-105 transition-transform duration-300">
-                        <img src="https://placehold.co/400x400/FBCFE8/9D174D?text=Sizden+Gelen+1" alt="Instagram Post 1" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300 flex items-center justify-center">
-                            <span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity">@anne_gunlugu</span>
-                        </div>
-                    </a>
-                    <a href="#" class="group block aspect-square rounded-xl overflow-hidden shadow-lg relative transform hover:scale-105 transition-transform duration-300">
-                        <img src="https://placehold.co/400x400/DBEAFE/1E40AF?text=Sizden+Gelen+2" alt="Instagram Post 2" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300 flex items-center justify-center">
-                            <span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity">@bebegimle_gezi</span>
-                        </div>
-                    </a>
-                    <a href="#" class="group block aspect-square rounded-xl overflow-hidden shadow-lg relative transform hover:scale-105 transition-transform duration-300">
-                        <img src="https://placehold.co/400x400/D1FAE5/065F46?text=Sizden+Gelen+3" alt="Instagram Post 3" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300 flex items-center justify-center">
-                            <span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity">@park_zamani</span>
-                        </div>
-                    </a>
-                    <a href="#" class="group block aspect-square rounded-xl overflow-hidden shadow-lg relative transform hover:scale-105 transition-transform duration-300">
-                        <img src="https://placehold.co/400x400/FEF9C3/B45309?text=Sizden+Gelen+4" alt="Instagram Post 4" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300 flex items-center justify-center">
-                            <span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity">@minik_gurme</span>
-                        </div>
-                    </a>
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-3xl font-extrabold text-gray-900 font-brand flex items-center gap-3">
+                        <span class="text-4xl">🏷️</span>
+                        <span class="bg-gradient-to-r from-red-600 to-orange-600 text-transparent bg-clip-text">Süper İndirimler</span>
+                    </h2>
+                    <a href="/urunler" class="hidden sm:block text-pink-600 font-bold hover:text-pink-700 hover:underline">Tümünü Gör →</a>
                 </div>
 
-                <div class="mt-12 text-center">
-                    <a href="#" {{-- Instagram linkini buraya ekle --}} 
-                       class="inline-block px-12 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-xl font-bold text-lg transition duration-300 transform hover:scale-105">
-                        Bizi Instagram'da Takip Edin!
+                <div 
+                    x-data="{ 
+                        scrollLeft: 0,
+                        container: null,
+                        maxScroll: 0,
+                        init() {
+                            this.container = this.$refs.scrollContainer;
+                            this.updateMaxScroll();
+                            // Otomatik kaydırma
+                            setInterval(() => {
+                                if (this.container) {
+                                    if (this.container.scrollLeft >= (this.container.scrollWidth - this.container.clientWidth - 10)) {
+                                        this.container.scrollTo({ left: 0, behavior: 'smooth' });
+                                    } else {
+                                        this.container.scrollBy({ left: 300, behavior: 'smooth' });
+                                    }
+                                }
+                            }, 5000);
+                        },
+                        updateMaxScroll() {
+                            if(this.container) this.maxScroll = this.container.scrollWidth - this.container.clientWidth;
+                        },
+                        scroll(direction) {
+                            const amount = direction === 'left' ? -300 : 300;
+                            this.container.scrollBy({ left: amount, behavior: 'smooth' });
+                        }
+                    }" 
+                    class="relative group"
+                >
+                    {{-- Sol Ok --}}
+                    <button 
+                        @click="scroll('left')"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-pink-50 hover:text-pink-600 transition-all focus:outline-none opacity-0 group-hover:opacity-100 hidden sm:block"
+                        aria-label="Sola Kaydır"
+                    >
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+
+                    {{-- Kaydırılabilir Alan --}}
+                    <div 
+                        x-ref="scrollContainer"
+                        @scroll.debounce="updateMaxScroll"
+                        class="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory no-scrollbar"
+                        style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch;"
+                    >
+                        @foreach($discountedProducts as $product)
+                            <div class="flex-none w-64 snap-start">
+                                <x-product-card :product="$product" :show-badge="true" />
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Sağ Ok --}}
+                    <button 
+                        @click="scroll('right')"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 bg-white text-gray-800 p-3 rounded-full shadow-lg hover:bg-pink-50 hover:text-pink-600 transition-all focus:outline-none opacity-0 group-hover:opacity-100 hidden sm:block"
+                        aria-label="Sağa Kaydır"
+                    >
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+        @endif
+
+        {{-- Ekstra İçerik Alanı: Kategoriler Vitrini --}}
+        <!-- <section class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-12 font-brand">Keşfetmeye Başla</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    {{-- Erkek Çocuk --}}
+                    <a href="/kategori/erkek-giyim" class="relative rounded-2xl overflow-hidden group h-64 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=800&auto=format&fit=crop" alt="Erkek Çocuk" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+                            <span class="text-white font-bold text-xl mb-1">Erkek Çocuk</span>
+                            <span class="text-gray-200 text-sm group-hover:translate-x-2 transition-transform duration-300">İncele →</span>
+                        </div>
+                    </a>
+                    
+                    {{-- Kız Çocuk --}}
+                    <a href="/kategori/kiz-cocuk" class="relative rounded-2xl overflow-hidden group h-64 shadow-md">
+                        <img src="https://images.unsplash.com/photo-1513159446162-54eb8bdaa79b?q=80&w=800&auto=format&fit=crop" alt="Kız Çocuk" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+                            <span class="text-white font-bold text-xl mb-1">Kız Çocuk</span>
+                            <span class="text-gray-200 text-sm group-hover:translate-x-2 transition-transform duration-300">İncele →</span>
+                        </div>
+                    </a>
+
+                    {{-- Bebek Giyim --}}
+                    <a href="/kategori/bebek-giyim" class="relative rounded-2xl overflow-hidden group h-64 shadow-md col-span-2 md:col-span-1">
+                        <img src="https://images.unsplash.com/photo-1522771930-78848d9293e8?q=80&w=800&auto=format&fit=crop" alt="Bebek Giyim" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+                            <span class="text-white font-bold text-xl mb-1">Bebek Giyim</span>
+                            <span class="text-gray-200 text-sm group-hover:translate-x-2 transition-transform duration-300">İncele →</span>
+                        </div>
                     </a>
                 </div>
             </div>
         </section>
+
+        {{-- Bülten Aboneliği (Görsel) --}}
+        <section class="bg-gradient-to-r from-pink-500 to-purple-600 py-16">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold text-white mb-4 font-brand">Fırsatlardan İlk Sen Haberdar Ol!</h2>
+                <p class="text-pink-100 mb-8 text-lg">E-posta listemize katıl, yeni sezon ürünleri ve özel indirimleri kaçırma.</p>
+                <form class="flex flex-col sm:flex-row gap-4 justify-center" onsubmit="event.preventDefault(); alert('Teşekkürler! (Demo)');">
+                    <input type="email" placeholder="E-posta adresin..." class="px-6 py-4 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-pink-300 w-full sm:w-96" required>
+                    <button type="submit" class="px-8 py-4 bg-yellow-400 text-purple-900 font-bold rounded-full hover:bg-yellow-300 transition-colors shadow-lg">
+                        Abone Ol
+                    </button>
+                </form>
+            </div>
+        </section> --!>
         
     </div>
 </x-layouts.storefront>

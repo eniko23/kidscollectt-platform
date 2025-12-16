@@ -38,7 +38,7 @@
                             <span>Siparişlerim</span>
                         </a>
 
-                        <a href="{{ route('profile.edit') }}" 
+                        <!--<a href="{{ route('profile.edit') }}" 
                            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors duration-200
                                 {{ request()->routeIs('profile.edit') 
                                     ? 'bg-pink-100 text-pink-700' 
@@ -54,7 +54,7 @@
                                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             <span>Şifre Değiştir</span>
-                        </a>
+                        </a> -->
 
                         <form method="POST" action="{{ route('logout') }}" class="w-full pt-2 border-t border-gray-200">
                             @csrf

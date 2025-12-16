@@ -32,10 +32,16 @@ class HomeController extends Controller
     // (İleride buraya gerçek satış verisi eklenebilir)
     $bestsellerProducts = Product::with('variants')->where('is_active', true)->inRandomOrder()->take(8)->get();
 
-    // 6. Soldaki Kategori Menüsü (Sidebar) için kategorileri çek
+    // 6. İndirimdeki Ürünleri Çek (Variantlarında indirim olanlar)
+    $discountedProducts = Product::whereHas('variants', function ($query) {
+        $query->whereNotNull('sale_price')
+              ->whereColumn('sale_price', '<', 'price');
+    })->with('variants')->take(10)->get();
+
+    // 7. Soldaki Kategori Menüsü (Sidebar) için kategorileri çek
     $categories = Category::whereNull('parent_id')->orderBy('name')->get();
 
-    // 7. Tüm bu verileri 'welcome' view'ına gönder
+    // 8. Tüm bu verileri 'welcome' view'ına gönder
     return view('welcome', [
         'settings' => $settings, // Tüm ayarlar (belki kargo için lazım olur)
         'featuredProduct' => $featuredProduct,
@@ -43,6 +49,7 @@ class HomeController extends Controller
         'expiresAt' => $expiresAt,
         'latestProducts' => $latestProducts,
         'bestsellerProducts' => $bestsellerProducts,
+        'discountedProducts' => $discountedProducts,
         'categories' => $categories,
     ]);
 }
