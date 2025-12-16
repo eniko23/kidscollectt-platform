@@ -61,15 +61,9 @@
     {{-- ❗ YENİ DESEN BİTTİ ❗ --}}
 
     {{-- Header'ın 'relative' ve 'z-50' olması, desenin arkada kalmasını sağlar --}}
-    <header 
-        x-data="{ mobileMenuOpen: false }" 
-        class="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50 border-b-4 border-pink-300"
-    >
+    <header class="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-50 border-b-4 border-pink-300">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
             <div class="flex items-center justify-between h-20">
-
-                {{-- Hamburger Menü Butonu (Mobil) --}}
-                
                 
                 {{-- Logo (Animasyonlu) --}}
                 <div class="flex-1 flex items-center">
@@ -176,35 +170,8 @@
 
             </div>
             
-            {{-- Kategori Menüsü (Mobil - Kaydırılabilir) --}}
-            <div class="flex justify-center py-3 border-t-2 border-pink-100 lg:hidden overflow-x-auto no-scrollbar">
-                <div class="flex gap-4 sm:gap-6 px-4 min-w-max">
-                    @if(isset($categories) && $categories->count() > 0)
-                        @foreach($categories as $category)
-                            <a href="{{ route('category.show', $category) }}" 
-                               class="flex items-center gap-2 text-sm sm:text-base font-bold text-gray-700 hover:text-pink-600 px-4 py-2 rounded-full hover:bg-pink-50 transition-all duration-200 hover:scale-105">
-                                
-                                {{-- ❗ YENİ İKONLAR ❗ (Kategorilerine göre) --}}
-                                @if(Str::contains($category->name, ['Kız', 'Kadın']))
-                                    <span class="text-pink-500">♀</span>
-                                @elseif(Str::contains($category->name, ['Erkek']))
-                                    <span class="text-blue-500">♂</span>
-                                @elseif(Str::contains($category->name, ['Bebek']))
-                                    <span class="text-purple-500">🍼</span>
-                                @else
-                                    <span class="text-gray-400">🏷️</span>
-                                @endif
-                                {{-- ❗ İKONLAR BİTTİ ❗ --}}
-
-                                {{ $category->name }}
-                            </a>
-                        @endforeach
-                    @endif
-                </div>
-            </div>
-            
             {{-- Kategori Menüsü (İkonlu) --}}
-            <div class="flex justify-center py-3 border-t-2 border-pink-100 hidden lg:flex">
+            <div class="flex justify-center py-3 border-t-2 border-pink-100">
                 <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
                     @if(isset($categories) && $categories->count() > 0)
                         @foreach($categories as $category)
@@ -230,106 +197,6 @@
                 </div>
             </div>
         </nav>
-
-        {{-- MOBİL MENÜ (DRAWER) --}}
-        <div 
-            x-show="mobileMenuOpen" 
-            class="fixed inset-0 z-50 flex lg:hidden" 
-            role="dialog" 
-            aria-modal="true"
-        >
-            {{-- Arkaplan Karartma --}}
-            <div 
-                x-show="mobileMenuOpen"
-                x-transition:enter="transition-opacity ease-linear duration-300"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition-opacity ease-linear duration-300"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-                @click="mobileMenuOpen = false"
-            ></div>
-
-            {{-- Yan Menü Paneli --}}
-            <div 
-                x-show="mobileMenuOpen"
-                x-transition:enter="transition ease-in-out duration-300 transform"
-                x-transition:enter-start="-translate-x-full"
-                x-transition:enter-end="translate-x-0"
-                x-transition:leave="transition ease-in-out duration-300 transform"
-                x-transition:leave-start="translate-x-0"
-                x-transition:leave-end="-translate-x-full"
-                class="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl h-full overflow-y-auto z-50"
-            >
-                {{-- Menü Başlığı ve Kapatma Butonu --}}
-                <div class="flex items-center justify-between px-6 py-5 border-b border-pink-100 bg-pink-50" style="background-color: #fdf2f8;">
-                    <span class="text-xl font-brand font-bold text-pink-600">Menü</span>
-                    <button @click="mobileMenuOpen = false" type="button" class="-mr-2 p-2 rounded-md text-gray-500 hover:text-pink-600 hover:bg-white transition-colors">
-                        <span class="sr-only">Menüyü Kapat</span>
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                {{-- Menü Linkleri --}}
-                <nav class="px-4 py-6 space-y-2 bg-white flex-1" style="background-color: white;">
-                    
-                    {{-- Ana Kategoriler (Sidebar'dan Kopyalandı) --}}
-                    <a href="{{ route('products.index') }}" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-gray-100 flex items-center justify-center text-lg group-hover:bg-pink-200 transition-all">🛍️</span>
-                        Tüm Ürünler
-                    </a>
-                    <a href="/kategori/en-cok-satanlar" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-orange-100 flex items-center justify-center text-lg group-hover:bg-orange-200 transition-all">🔥</span>
-                        En Çok Satanlar
-                    </a>
-                    <a href="/kategori/erkek-giyim" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-blue-100 flex items-center justify-center text-lg group-hover:bg-blue-200 transition-all">👦</span>
-                        Erkek Çocuk
-                    </a>
-                    <a href="/kategori/kiz-cocuk" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-pink-100 flex items-center justify-center text-lg group-hover:bg-pink-200 transition-all">👧</span>
-                        Kız Çocuk
-                    </a>
-                    <a href="/kategori/yetiskin" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-purple-100 flex items-center justify-center text-lg group-hover:bg-purple-200 transition-all">👩</span>
-                        Yetişkin
-                    </a>
-                    <a href="/kategori/aile-kombinleri" class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-green-100 flex items-center justify-center text-lg group-hover:bg-green-200 transition-all">👨‍👩‍👧‍👦</span>
-                        Aile Kombinleri
-                    </a>
-                    <a href="/kategori/indirimdekiler" class="flex items-center px-4 py-3 text-base font-medium text-red-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors group">
-                        <span class="w-8 h-8 mr-3 rounded-full bg-red-100 flex items-center justify-center text-lg group-hover:bg-red-200 transition-all">🏷️</span>
-                        İndirimdekiler
-                    </a>
-
-                    <div class="border-t border-gray-100 my-4"></div>
-
-                    {{-- Diğer Kategoriler (Dynamic) --}}
-                    @if(isset($categories) && $categories->count() > 0)
-                        <div class="px-4 py-2">
-                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Kategoriler</span>
-                        </div>
-                        @foreach($categories as $category)
-                             <a href="{{ route('category.show', $category) }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors">
-                                {{ $category->name }}
-                            </a>
-                        @endforeach
-                    @endif
-
-                </nav>
-                
-                {{-- Alt Kısım (Footer-like) --}}
-                <div class="mt-auto border-t border-gray-200 p-6 bg-gray-50">
-                    <p class="text-sm text-center text-gray-500">
-                        &copy; {{ date('Y') }} Kids Collectt
-                    </p>
-                </div>
-            </div>
-        </div>
     </header>
 
     {{-- Ana içerik, desenin üzerinde kalması için 'relative z-10' --}}
@@ -377,7 +244,21 @@
         </div>
     </footer>
 
-    
+    {{-- Sepete Ekleme Bildirimi --}}
+    <div 
+        x-data="{ show: false, message: '' }"
+        x-on:product-added-to-cart.window="
+            message = `Ürün ('${event.detail.variant_name}') sepete eklendi!`;
+            show = true;
+            setTimeout(() => show = false, 3000); // 3 saniye sonra mesajı gizle
+        "
+        x-show="show"
+        x-transition
+        style="display: none;"
+        class="fixed bottom-4 right-4 z-50 rounded-md bg-green-600 px-4 py-3 text-white shadow-lg"
+    >
+        <p x-text="message"></p>
+    </div>
 
     @livewireScriptConfig
 

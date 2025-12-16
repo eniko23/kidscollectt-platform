@@ -78,8 +78,8 @@ $user_name = iconv('UTF-8', 'ASCII//TRANSLIT', $user_name);
 
 
         $timeout_limit  = 30;
-        $debug_on       = 1;
-        $test_mode      = 1;
+        $debug_on       = 0;
+        $test_mode      = 0;
         $no_installment = 0;
         $max_installment = 0;
         $currency = 'TL';
