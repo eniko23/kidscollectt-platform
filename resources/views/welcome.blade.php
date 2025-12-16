@@ -241,10 +241,14 @@
         <section class="bg-red-50 py-16 sm:py-24 border-t border-red-100 overflow-hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-3xl font-extrabold text-gray-900 font-brand flex items-center gap-3">
-                        <span class="text-4xl">🏷️</span>
-                        <span class="bg-gradient-to-r from-red-600 to-orange-600 text-transparent bg-clip-text">Süper İndirimler</span>
-                    </h2>
+                    <h2 class="text-3xl font-extrabold font-brand flex items-center gap-3">
+    <span class="text-4xl">🏷️</span>
+    <span class="bg-gradient-to-r from-orange-500 via-yellow-400 to-amber-500
+                 text-transparent bg-clip-text animate-pulse">
+        Süper İndirimler
+    </span>
+</h2>
+
                     <a href="/urunler" class="hidden sm:block text-pink-600 font-bold hover:text-pink-700 hover:underline">Tümünü Gör →</a>
                 </div>
 
