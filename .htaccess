@@ -1,9 +1,13 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # HTTPS zorunlu (HTTP -> HTTPS)
+    # Production ortamı için HTTPS + WWW zorlaması (sadece kidscollectt.com)
+    RewriteCond %{HTTP_HOST} ^(www\.)?kidscollectt\.com$ [NC]
     RewriteCond %{HTTPS} off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    RewriteRule ^ https://www.kidscollectt.com%{REQUEST_URI} [L,R=301]
+
+    RewriteCond %{HTTP_HOST} ^kidscollectt\.com$ [NC]
+    RewriteRule ^ https://www.kidscollectt.com%{REQUEST_URI} [L,R=301]
 
     # Eğer istenen şey gerçek bir dosya değilse ve klasör değilse,
     # tüm istekleri public/index.php'ye gönder
