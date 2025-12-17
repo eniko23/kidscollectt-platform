@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,14 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Reverse Proxy
-        $middleware->trustProxies(at: '*');
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_ALL);
 
         // ❗ CSRF Hariç Bırakma
         $middleware->validateCsrfTokens(except: [
             'payment/callback',
         ]);
-
-        $middleware->append(\App\Http\Middleware\ForceHttps::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
