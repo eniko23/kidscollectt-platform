@@ -20,20 +20,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS scheme only in non-local environments
-        if (! $this->app->environment('local', 'testing')) {
+        $appUrl = config('app.url');
+
+        // If APP_URL is configured with HTTPS, enforce it everywhere.
+        // This allows the user to control HTTPS usage via .env (APP_URL=https://...)
+        if ($appUrl && str_starts_with($appUrl, 'https://')) {
+            // Force HTTPS scheme for asset() and route()
             URL::forceScheme('https');
-        }
 
-        // Fix for Livewire mixed content in production
-        if ($this->app->environment('production')) {
+            // Force Root URL to ensure we stick to the configured domain
+            URL::forceRootUrl($appUrl);
+
+            // Trick the Request object into thinking it's secure (fixes Livewire uploads behind proxies)
             $this->app['request']->server->set('HTTPS', 'on');
-
-            // Ensure APP_URL is used as root if it's HTTPS
-            $appUrl = config('app.url');
-            if ($appUrl && str_starts_with($appUrl, 'https://')) {
-               URL::forceRootUrl($appUrl);
-            }
+        } elseif ($this->app->environment('production')) {
+            // Fallback: Always enforce HTTPS in production even if APP_URL is mistyped or missing
+            URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', 'on');
         }
     }
 }
