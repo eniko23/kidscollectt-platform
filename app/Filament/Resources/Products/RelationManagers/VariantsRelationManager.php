@@ -24,6 +24,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 
 
 class VariantsRelationManager extends RelationManager
@@ -31,6 +32,8 @@ class VariantsRelationManager extends RelationManager
     protected static string $relationship = 'variants'; 
     protected static ?string $modelLabel = 'Varyant';
     protected static ?string $pluralModelLabel = 'Varyantlar';
+
+    public ?string $tempFeaturedImageUrl = null;
 
     // ... (getSizeOptions() metodu aynı kalacak) ...
     protected function getSizeOptions(): array
@@ -138,6 +141,12 @@ class VariantsRelationManager extends RelationManager
                     ->nullable()
                     ->maxLength(255),
 
+                TextInput::make('featured_image_url')
+                    ->label('Resim Linki ile Yükle (Alternatif)')
+                    ->helperText('Dosya yükleme çalışmıyorsa burayı kullanın.')
+                    ->url()
+                    ->columnSpanFull(),
+
                 SpatieMediaLibraryFileUpload::make('variant_image')
                     ->label('Varyanta Özel Resim')
                     ->collection('variant-images') 
@@ -203,6 +212,7 @@ class VariantsRelationManager extends RelationManager
                         
                         $createdVariants = [];
                         $variantImage = $data['variant_image'] ?? null;
+                        $featuredImageUrl = $data['featured_image_url'] ?? null;
                         
                         foreach ($sizes as $size) {
                             $variantData = [
@@ -225,6 +235,22 @@ class VariantsRelationManager extends RelationManager
                             if ($variantImage) {
                                 // 
                             }
+
+                            if (! empty($featuredImageUrl)) {
+                                try {
+                                    $variant->addMediaFromUrl($featuredImageUrl)
+                                        ->toMediaCollection('variant-images');
+                                } catch (\Exception $e) {
+                                    // Sadece ilk hatada bildirim gösterelim, döngüde spam olmasın
+                                    if (count($createdVariants) === 0) {
+                                        Notification::make()
+                                            ->title('Resim İndirilemedi')
+                                            ->body('Hata: ' . $e->getMessage())
+                                            ->danger()
+                                            ->send();
+                                    }
+                                }
+                            }
                             
                             $createdVariants[] = $variant;
                         }
@@ -240,7 +266,31 @@ class VariantsRelationManager extends RelationManager
                         return $createdVariants[0];
                     }),
             ])
-            ->recordActions([ EditAction::make(), DeleteAction::make(), ])
+            ->recordActions([
+                EditAction::make()
+                    ->mutateFormDataBeforeSave(function (array $data) {
+                        $this->tempFeaturedImageUrl = $data['featured_image_url'] ?? null;
+                        unset($data['featured_image_url']);
+                        return $data;
+                    })
+                    ->after(function ($record) {
+                        if (! empty($this->tempFeaturedImageUrl)) {
+                            try {
+                                $record->addMediaFromUrl($this->tempFeaturedImageUrl)
+                                    ->toMediaCollection('variant-images');
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Resim İndirilemedi')
+                                    ->body('Hata: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                            // Temizle
+                            $this->tempFeaturedImageUrl = null;
+                        }
+                    }),
+                DeleteAction::make(),
+            ])
             ->toolbarActions([ BulkActionGroup::make([ DeleteBulkAction::make(), ]), ]);
     }
 }
