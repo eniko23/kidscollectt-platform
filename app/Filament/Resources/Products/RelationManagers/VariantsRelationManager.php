@@ -268,7 +268,7 @@ class VariantsRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make()
-                    ->mutateFormDataBeforeSave(function (array $data) {
+                    ->mutateFormDataUsing(function (array $data): array {
                         $this->tempFeaturedImageUrl = $data['featured_image_url'] ?? null;
                         unset($data['featured_image_url']);
                         return $data;
