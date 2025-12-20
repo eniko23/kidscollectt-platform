@@ -20,8 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS scheme
-        URL::forceScheme('https');
+        // Force HTTPS scheme only in non-local environments
+        if (! $this->app->environment('local', 'testing')) {
+            URL::forceScheme('https');
+        }
 
         // Fix for Livewire mixed content in production
         if ($this->app->environment('production')) {
