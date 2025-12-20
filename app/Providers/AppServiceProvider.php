@@ -22,8 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //if (! app()->environment(['local', 'testing'])) {
+        if (! app()->environment(['local', 'testing'])) {
             URL::forceScheme('https');
-        //}
+
+            $appUrl = config('app.url');
+            if ($appUrl && str_starts_with($appUrl, 'http://')) {
+                config(['livewire.asset_url' => str_replace('http://', 'https://', $appUrl)]);
+            }
+        }
     }
 }
