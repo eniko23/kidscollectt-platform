@@ -5,8 +5,6 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
-
-
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -22,8 +20,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //if (! app()->environment(['local', 'testing'])) {
-            URL::forceScheme('https');
-        //}
+        // Force HTTPS scheme
+        URL::forceScheme('https');
+
+        // Fix for Livewire mixed content in production
+        if ($this->app->environment('production')) {
+            $this->app['request']->server->set('HTTPS', 'on');
+
+            // Ensure APP_URL is used as root if it's HTTPS
+            $appUrl = config('app.url');
+            if ($appUrl && str_starts_with($appUrl, 'https://')) {
+               URL::forceRootUrl($appUrl);
+            }
+        }
     }
 }
