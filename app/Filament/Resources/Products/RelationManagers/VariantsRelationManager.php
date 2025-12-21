@@ -145,7 +145,6 @@ class VariantsRelationManager extends RelationManager
                     ->label('Resim Linki (Manuel)')
                     ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz.')
                     ->url()
-                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('variant_image')

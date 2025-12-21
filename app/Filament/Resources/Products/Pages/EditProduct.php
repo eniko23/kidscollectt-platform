@@ -12,6 +12,8 @@ class EditProduct extends EditRecord
 {
     protected static string $resource = ProductResource::class;
 
+    public ?string $originalImageUrl = null;
+
     protected function getHeaderActions(): array
     {
         return [
@@ -20,13 +22,18 @@ class EditProduct extends EditRecord
         ];
     }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $this->originalImageUrl = $data['original_image_url'] ?? null;
+        unset($data['original_image_url']);
+        return $data;
+    }
+
     protected function afterSave(): void
     {
-        $data = $this->form->getRawState();
-
-        if (! empty($data['original_image_url'])) {
+        if (! empty($this->originalImageUrl)) {
             try {
-                $this->record->addMediaFromUrl($data['original_image_url'])
+                $this->record->addMediaFromUrl($this->originalImageUrl)
                     ->toMediaCollection('product-images');
             } catch (\Exception $e) {
                 Notification::make()

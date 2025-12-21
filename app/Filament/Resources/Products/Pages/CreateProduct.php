@@ -10,13 +10,20 @@ class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
+    public ?string $originalImageUrl = null;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $this->originalImageUrl = $data['original_image_url'] ?? null;
+        unset($data['original_image_url']);
+        return $data;
+    }
+
     protected function afterCreate(): void
     {
-        $data = $this->form->getRawState();
-
-        if (! empty($data['original_image_url'])) {
+        if (! empty($this->originalImageUrl)) {
             try {
-                $this->record->addMediaFromUrl($data['original_image_url'])
+                $this->record->addMediaFromUrl($this->originalImageUrl)
                     ->toMediaCollection('product-images');
             } catch (\Exception $e) {
                 Notification::make()

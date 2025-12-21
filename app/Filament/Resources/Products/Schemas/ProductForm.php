@@ -70,7 +70,6 @@ class ProductForm
                     ->label('Resim Linki (Manuel)')
                     ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz. Bu link kullanılarak resim sunucuya indirilecektir.')
                     ->url()
-                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('featured_image')
