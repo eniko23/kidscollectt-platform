@@ -145,6 +145,7 @@ class VariantsRelationManager extends RelationManager
                     ->label('Resim Linki (Manuel)')
                     ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz.')
                     ->url()
+                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('variant_image')
@@ -228,7 +229,7 @@ class VariantsRelationManager extends RelationManager
                                 'stock' => $data['stock'] ?? 0,
                                 'min_quantity' => $data['min_quantity'] ?? 1,
                                 'barcode' => $data['barcode'] ?? null,
-                                'original_image_url' => $featuredImageUrl,
+                                // 'original_image_url' DB'ye kaydedilmiyor
                             ];
                             
                             $variant = $model::create($variantData);
@@ -271,7 +272,7 @@ class VariantsRelationManager extends RelationManager
                 EditAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
                         $this->tempFeaturedImageUrl = $data['original_image_url'] ?? null;
-                        // No unset, we want to save it to DB
+                        unset($data['original_image_url']); // DB hatasını önlemek için kaldır
                         return $data;
                     })
                     ->after(function ($record) {

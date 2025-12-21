@@ -68,8 +68,9 @@ class ProductForm
 
                 TextInput::make('original_image_url')
                     ->label('Resim Linki (Manuel)')
-                    ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz. Sistem bu linki kullanarak resmi göstermeye çalışacaktır.')
+                    ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz. Bu link kullanılarak resim sunucuya indirilecektir.')
                     ->url()
+                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('featured_image')

@@ -31,7 +31,6 @@ class Product extends Model implements HasMedia
     'should_track_stock',
     'meta_keywords',
     'meta_description',
-    'original_image_url',
     // ------------------
     ];
 

@@ -33,7 +33,6 @@ class ProductVariant extends Model implements HasMedia
         'stock',
         'sku',
         'barcode',
-        'original_image_url',
     ];
 
     /**
