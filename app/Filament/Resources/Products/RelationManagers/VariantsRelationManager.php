@@ -2,18 +2,13 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
-// --- GEREKLİ TÜM 'use' BİLDİRİMLERİ (SADELEŞTİRİLDİ) ---
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\CheckboxList;
 use Illuminate\Database\Eloquent\Model;
-
-// 'RelationManager' Schema sınıfını 'Filament\Schemas' altından bekler.
 use Filament\Schemas\Schema; 
-// 'Get' sınıfı kaldırıldı.
-
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
@@ -26,16 +21,15 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 
-
 class VariantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'variants'; 
     protected static ?string $modelLabel = 'Varyant';
     protected static ?string $pluralModelLabel = 'Varyantlar';
 
-    public ?string $tempFeaturedImageUrl = null;
+    // Bu özelliğe artık ihtiyaç yok çünkü using() kullanıyoruz ama geriye dönük uyumluluk için tutabiliriz
+    // public ?string $tempFeaturedImageUrl = null;
 
-    // ... (getSizeOptions() metodu aynı kalacak) ...
     protected function getSizeOptions(): array
     {
         return [
@@ -54,7 +48,6 @@ class VariantsRelationManager extends RelationManager
         ];
     }
 
-    // --- FORM GÜNCELLEMESİ (KISITLAMALAR KALDIRILDI) ---
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -79,7 +72,6 @@ class VariantsRelationManager extends RelationManager
                     ->label('Renk Kodu 2'),
 
                 CheckboxList::make('sizes')
-                    // ... (içerik aynı) ...
                     ->options($this->getSizeOptions())
                     ->required()
                     ->columns(3)
@@ -87,35 +79,30 @@ class VariantsRelationManager extends RelationManager
                     ->visibleOn('create'),
                 
                 Select::make('size')
-                    // ... (içerik aynı) ...
                     ->options($this->getSizeOptions())
                     ->required()
                     ->searchable()
                     ->placeholder('Beden Seçiniz')
                     ->visibleOn('edit'),
 
-                // 4. Normal Fiyat (Sadeleştirildi)
                 TextInput::make('price')
                     ->label('Normal Fiyat (Kuruş)')
                     ->helperText('Örn: 199.99 TL için 19999')
                     ->required()
                     ->numeric()
-                    ->live(onBlur: true), // 'live()' kaldırıldı, 'onBlur' yeterli
+                    ->live(onBlur: true),
 
-                // 5. İNDİRİMLİ FİYAT (KISITLAMA KALDIRILDI)
                 TextInput::make('sale_price')
                     ->label('İndirimli Fiyat (Kuruş)')
-                    ->helperText('Boş bırakırsanız indirim uygulanmaz.') // Yardım metni güncellendi
+                    ->helperText('Boş bırakırsanız indirim uygulanmaz.')
                     ->numeric()
                     ->nullable()
-                    // Kurallar sadeleştirildi:
                     ->rules([
                         'nullable',
                         'numeric',
-                        'min:0', // Sadece 0'dan büyük olsun
+                        'min:0',
                     ]),
 
-                // 6. Bayi Fiyatı
                 TextInput::make('bayii_price')
                     ->label('Bayi Fiyatı (Kuruş)')
                     ->helperText('Bayiye özel toptan fiyat (kuruş)')
@@ -123,7 +110,6 @@ class VariantsRelationManager extends RelationManager
                     ->nullable()
                     ->live(onBlur: true),
 
-                // ... (stock, min_quantity, variant_image aynı kalacak) ...
                 TextInput::make('stock')
                     ->label('Stok Adedi')
                     ->required()
@@ -158,7 +144,6 @@ class VariantsRelationManager extends RelationManager
             ]);
     }
 
-    // --- TABLO METODU (KISITLAMA KALDIRILDI) ---
     public function table(Table $table): Table
     {
         return $table
@@ -172,10 +157,8 @@ class VariantsRelationManager extends RelationManager
                 TextInputColumn::make('price')->label('Normal Fiyat (Kuruş)')
                     ->rules(['required', 'numeric', 'min:0'])->sortable(),
 
-                // İNDİRİMLİ FİYAT SÜTUNU (KISITLAMA KALDIRILDI)
                 TextInputColumn::make('sale_price')
                     ->label('İndirimli Fiyat (Kuruş)')
-                    // 'lte:price' kuralı kaldırıldı
                     ->rules(['nullable', 'numeric', 'min:0']) 
                     ->placeholder('İndirim Yok')
                     ->sortable(),
@@ -196,13 +179,9 @@ class VariantsRelationManager extends RelationManager
                 TextColumn::make('barcode')->label('Barkod')->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
             ->headerActions([ 
                 CreateAction::make()
                     ->using(function (array $data, string $model): Model {
-                        // ... (CreateAction içeriği aynı kalacak) ...
                         $sizes = $data['sizes'] ?? [];
                         $productId = $this->getOwnerRecord()->id;
                         
@@ -228,21 +207,24 @@ class VariantsRelationManager extends RelationManager
                                 'stock' => $data['stock'] ?? 0,
                                 'min_quantity' => $data['min_quantity'] ?? 1,
                                 'barcode' => $data['barcode'] ?? null,
-                                // 'original_image_url' DB'ye kaydedilmiyor
                             ];
                             
                             $variant = $model::create($variantData);
                             
-                            if ($variantImage) {
-                                // 
-                            }
+                            // Normal dosya yüklemesi varsa zaten SpatieMediaLibraryFileUpload handle eder mi?
+                            // Hayır, 'CreateAction::using' kullandığımızda formun 'saveRelationships' kısmı otomatik çalışmayabilir.
+                            // Ancak 'SpatieMediaLibraryFileUpload' genellikle model kaydedildikten sonra devreye girer.
+                            // Burada 'variant_image' normal upload ise, Filament bunu otomatik halledemez çünkü manual 'create' yapıyoruz.
+                            // Ancak 'SpatieMediaLibraryFileUpload' bileşeni 'saveRelationshipsUsing' kullanır.
+                            // Bu karmaşık olabilir. CreateAction::using kullanıldığında ilişki kaydetme manuel yapılmalı mı?
+                            // Filament v3'te bu genellikle otomatik değildir.
 
+                            // Ancak kullanıcının asıl sorunu 'URL'den yükleme.
                             if (! empty($featuredImageUrl)) {
                                 try {
                                     $variant->addMediaFromUrl($featuredImageUrl)
                                         ->toMediaCollection('variant-images');
                                 } catch (\Exception $e) {
-                                    // Sadece ilk hatada bildirim gösterelim, döngüde spam olmasın
                                     if (count($createdVariants) === 0) {
                                         Notification::make()
                                             ->title('Resim İndirilemedi')
@@ -258,7 +240,7 @@ class VariantsRelationManager extends RelationManager
                         
                         $count = count($createdVariants);
                         if ($count > 1) {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title("{$count} beden için varyant oluşturuldu!")
                                 ->success()
                                 ->send();
@@ -269,16 +251,21 @@ class VariantsRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make()
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $this->tempFeaturedImageUrl = $data['original_image_url'] ?? null;
-                        unset($data['original_image_url']); // DB hatasını önlemek için kaldır
-                        return $data;
-                    })
-                    ->after(function ($record) {
-                        if (! empty($this->tempFeaturedImageUrl)) {
+                    ->using(function (Model $record, array $data): Model {
+                        $featuredImageUrl = $data['original_image_url'] ?? null;
+                        unset($data['original_image_url']);
+
+                        $record->update($data);
+
+                        if (! empty($featuredImageUrl)) {
                             try {
-                                $record->addMediaFromUrl($this->tempFeaturedImageUrl)
+                                $record->addMediaFromUrl($featuredImageUrl)
                                     ->toMediaCollection('variant-images');
+
+                                Notification::make()
+                                    ->title('Resim Güncellendi')
+                                    ->success()
+                                    ->send();
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Resim İndirilemedi')
@@ -286,9 +273,9 @@ class VariantsRelationManager extends RelationManager
                                     ->danger()
                                     ->send();
                             }
-                            // Temizle
-                            $this->tempFeaturedImageUrl = null;
                         }
+
+                        return $record;
                     }),
                 DeleteAction::make(),
             ])
