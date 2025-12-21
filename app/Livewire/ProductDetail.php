@@ -29,9 +29,8 @@ class ProductDetail extends Component
     public function mount(Product $product)
     {
         $this->product = $product;
-        // Sadece stokta olan varyantları çek
+        // Tüm varyantları çek (Stok 0 olsa bile, ki "Stokta Yok" yazabilsin)
         $this->variants = ProductVariant::where('product_id', $this->product->id)
-            ->where('stock', '>', 0)
             ->get();
 
         // Renk listesi (color_name ve color_code'u birlikte al)
