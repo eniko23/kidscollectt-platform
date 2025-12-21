@@ -66,11 +66,10 @@ class ProductForm
                 Toggle::make('is_active')
                     ->label('Ürün Yayında mı?')->default(true),
 
-                TextInput::make('featured_image_url')
-                    ->label('Resim Linki ile Yükle (Dosya yüklemede sorun yaşıyorsanız)')
-                    ->helperText('Eğer dosya yüklenemiyorsa (örn: HTTP hatası), buraya direkt resim linkini yapıştırın. Kaydettikten sonra otomatik eklenecektir.')
+                TextInput::make('original_image_url')
+                    ->label('Resim Linki (Manuel)')
+                    ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz. Sistem bu linki kullanarak resmi göstermeye çalışacaktır.')
                     ->url()
-                    ->dehydrated(false)
                     ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('featured_image')

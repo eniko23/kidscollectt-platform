@@ -14,9 +14,9 @@ class CreateProduct extends CreateRecord
     {
         $data = $this->form->getRawState();
 
-        if (! empty($data['featured_image_url'])) {
+        if (! empty($data['original_image_url'])) {
             try {
-                $this->record->addMediaFromUrl($data['featured_image_url'])
+                $this->record->addMediaFromUrl($data['original_image_url'])
                     ->toMediaCollection('product-images');
             } catch (\Exception $e) {
                 Notification::make()

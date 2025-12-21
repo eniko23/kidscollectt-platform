@@ -141,9 +141,9 @@ class VariantsRelationManager extends RelationManager
                     ->nullable()
                     ->maxLength(255),
 
-                TextInput::make('featured_image_url')
-                    ->label('Resim Linki ile Yükle (Alternatif)')
-                    ->helperText('Dosya yükleme çalışmıyorsa burayı kullanın.')
+                TextInput::make('original_image_url')
+                    ->label('Resim Linki (Manuel)')
+                    ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz.')
                     ->url()
                     ->columnSpanFull(),
 
@@ -212,7 +212,7 @@ class VariantsRelationManager extends RelationManager
                         
                         $createdVariants = [];
                         $variantImage = $data['variant_image'] ?? null;
-                        $featuredImageUrl = $data['featured_image_url'] ?? null;
+                        $featuredImageUrl = $data['original_image_url'] ?? null;
                         
                         foreach ($sizes as $size) {
                             $variantData = [
@@ -228,6 +228,7 @@ class VariantsRelationManager extends RelationManager
                                 'stock' => $data['stock'] ?? 0,
                                 'min_quantity' => $data['min_quantity'] ?? 1,
                                 'barcode' => $data['barcode'] ?? null,
+                                'original_image_url' => $featuredImageUrl,
                             ];
                             
                             $variant = $model::create($variantData);
@@ -269,8 +270,8 @@ class VariantsRelationManager extends RelationManager
             ->recordActions([
                 EditAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
-                        $this->tempFeaturedImageUrl = $data['featured_image_url'] ?? null;
-                        unset($data['featured_image_url']);
+                        $this->tempFeaturedImageUrl = $data['original_image_url'] ?? null;
+                        // No unset, we want to save it to DB
                         return $data;
                     })
                     ->after(function ($record) {
