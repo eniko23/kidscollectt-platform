@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GalleryImageResource\Pages;
 use App\Models\GalleryImage;
+use BackedEnum;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -17,7 +18,9 @@ class GalleryImageResource extends Resource
 {
     protected static ?string $model = GalleryImage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-photo';
+    // Correct type signature matching Filament Resource base class
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-photo';
+
     protected static ?string $navigationLabel = 'Galeri';
     protected static ?string $modelLabel = 'Galeri Görseli';
     protected static ?string $pluralModelLabel = 'Galeri Görselleri';
