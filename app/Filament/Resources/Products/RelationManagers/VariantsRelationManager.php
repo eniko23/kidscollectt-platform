@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Models\GalleryImage;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -26,9 +27,6 @@ class VariantsRelationManager extends RelationManager
     protected static string $relationship = 'variants'; 
     protected static ?string $modelLabel = 'Varyant';
     protected static ?string $pluralModelLabel = 'Varyantlar';
-
-    // Bu özelliğe artık ihtiyaç yok çünkü using() kullanıyoruz ama geriye dönük uyumluluk için tutabiliriz
-    // public ?string $tempFeaturedImageUrl = null;
 
     protected function getSizeOptions(): array
     {
@@ -127,6 +125,16 @@ class VariantsRelationManager extends RelationManager
                     ->nullable()
                     ->maxLength(255),
 
+                // --- GÖRSEL ALANLARI ---
+
+                Select::make('from_gallery_id')
+                    ->label('Galeriden Görsel Seç')
+                    ->helperText('Daha önce yüklenmiş bir görseli kullanmak için seçin.')
+                    ->options(GalleryImage::all()->pluck('title', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->columnSpanFull(),
+
                 TextInput::make('original_image_url')
                     ->label('Resim Linki (Manuel)')
                     ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz.')
@@ -153,31 +161,8 @@ class VariantsRelationManager extends RelationManager
                 TextColumn::make('color_name')->label('Renk')->searchable()->placeholder('Yok'),
                 ColorColumn::make('color_code')->label('Renk 1'),
                 ColorColumn::make('color_code_2')->label('Renk 2'),
-
-                TextInputColumn::make('price')->label('Normal Fiyat (Kuruş)')
-                    ->rules(['required', 'numeric', 'min:0'])->sortable(),
-
-                TextInputColumn::make('sale_price')
-                    ->label('İndirimli Fiyat (Kuruş)')
-                    ->rules(['nullable', 'numeric', 'min:0']) 
-                    ->placeholder('İndirim Yok')
-                    ->sortable(),
-
-                TextInputColumn::make('bayii_price')->label('Bayi Fiyatı (Kuruş)')
-                    ->rules(['nullable', 'numeric', 'min:0'])->sortable()->placeholder('Yok')
-                    ->toggleable(isToggledHiddenByDefault: true), 
-
-                TextInputColumn::make('stock')->label('Stok')
-                    ->rules(['required', 'numeric', 'min:0'])->sortable(),
-                
-                TextColumn::make('min_quantity')->label('Min. Adet')->numeric()->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('sku')->label('SKU')->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                
-                TextColumn::make('barcode')->label('Barkod')->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextInputColumn::make('price')->label('Fiyat')->sortable(),
+                TextInputColumn::make('stock')->label('Stok')->sortable(),
             ])
             ->headerActions([ 
                 CreateAction::make()
@@ -190,8 +175,8 @@ class VariantsRelationManager extends RelationManager
                         }
                         
                         $createdVariants = [];
-                        $variantImage = $data['variant_image'] ?? null;
                         $featuredImageUrl = $data['original_image_url'] ?? null;
+                        $galleryImageId = $data['from_gallery_id'] ?? null;
                         
                         foreach ($sizes as $size) {
                             $variantData = [
@@ -211,26 +196,28 @@ class VariantsRelationManager extends RelationManager
                             
                             $variant = $model::create($variantData);
                             
-                            // Normal dosya yüklemesi varsa zaten SpatieMediaLibraryFileUpload handle eder mi?
-                            // Hayır, 'CreateAction::using' kullandığımızda formun 'saveRelationships' kısmı otomatik çalışmayabilir.
-                            // Ancak 'SpatieMediaLibraryFileUpload' genellikle model kaydedildikten sonra devreye girer.
-                            // Burada 'variant_image' normal upload ise, Filament bunu otomatik halledemez çünkü manual 'create' yapıyoruz.
-                            // Ancak 'SpatieMediaLibraryFileUpload' bileşeni 'saveRelationshipsUsing' kullanır.
-                            // Bu karmaşık olabilir. CreateAction::using kullanıldığında ilişki kaydetme manuel yapılmalı mı?
-                            // Filament v3'te bu genellikle otomatik değildir.
-
-                            // Ancak kullanıcının asıl sorunu 'URL'den yükleme.
+                            // 1. Manuel Link
                             if (! empty($featuredImageUrl)) {
                                 try {
                                     $variant->addMediaFromUrl($featuredImageUrl)
                                         ->toMediaCollection('variant-images');
                                 } catch (\Exception $e) {
-                                    if (count($createdVariants) === 0) {
-                                        Notification::make()
-                                            ->title('Resim İndirilemedi')
-                                            ->body('Hata: ' . $e->getMessage())
-                                            ->danger()
-                                            ->send();
+                                    // Sessiz kal veya logla
+                                }
+                            }
+
+                            // 2. Galeri Seçimi
+                            if (! empty($galleryImageId)) {
+                                $galleryImage = GalleryImage::find($galleryImageId);
+                                if ($galleryImage && $galleryImage->hasMedia('gallery-images')) {
+                                    try {
+                                        $url = $galleryImage->getFirstMediaUrl('gallery-images');
+                                        if ($url) {
+                                            $variant->addMediaFromUrl($url)
+                                                ->toMediaCollection('variant-images');
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Sessiz kal
                                     }
                                 }
                             }
@@ -253,25 +240,38 @@ class VariantsRelationManager extends RelationManager
                 EditAction::make()
                     ->using(function (Model $record, array $data): Model {
                         $featuredImageUrl = $data['original_image_url'] ?? null;
+                        $galleryImageId = $data['from_gallery_id'] ?? null;
+
                         unset($data['original_image_url']);
+                        unset($data['from_gallery_id']);
 
                         $record->update($data);
 
+                        // 1. Manuel Link
                         if (! empty($featuredImageUrl)) {
                             try {
                                 $record->addMediaFromUrl($featuredImageUrl)
                                     ->toMediaCollection('variant-images');
-
-                                Notification::make()
-                                    ->title('Resim Güncellendi')
-                                    ->success()
-                                    ->send();
+                                Notification::make()->title('Resim Güncellendi')->success()->send();
                             } catch (\Exception $e) {
-                                Notification::make()
-                                    ->title('Resim İndirilemedi')
-                                    ->body('Hata: ' . $e->getMessage())
-                                    ->danger()
-                                    ->send();
+                                Notification::make()->title('Resim İndirilemedi')->danger()->send();
+                            }
+                        }
+
+                        // 2. Galeri Seçimi
+                        if (! empty($galleryImageId)) {
+                            $galleryImage = GalleryImage::find($galleryImageId);
+                            if ($galleryImage && $galleryImage->hasMedia('gallery-images')) {
+                                try {
+                                    $url = $galleryImage->getFirstMediaUrl('gallery-images');
+                                    if ($url) {
+                                        $record->addMediaFromUrl($url)
+                                            ->toMediaCollection('variant-images');
+                                        Notification::make()->title('Galeri Görseli Eklendi')->success()->send();
+                                    }
+                                } catch (\Exception $e) {
+                                    Notification::make()->title('Hata')->body($e->getMessage())->danger()->send();
+                                }
                             }
                         }
 
