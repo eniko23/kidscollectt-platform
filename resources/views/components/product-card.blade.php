@@ -9,8 +9,22 @@
         <div class="aspect-square w-full overflow-hidden relative">
             
             {{-- Ürün Resmi --}}
-            @if($product->getFirstMedia('product-images'))
-                <img src="{{ $product->getFirstMedia('product-images')->getUrl() }}" 
+            @php
+                // Resim Önceliği:
+                // 1. Manuel girilen dış link (original_image_url) -> En güvenilir, çünkü kullanıcı "link" dedi.
+                // 2. Medya kütüphanesi (varsa)
+                
+                $imageUrl = null;
+
+                if (!empty($product->original_image_url)) {
+                    $imageUrl = $product->original_image_url;
+                } elseif ($product->getFirstMedia('product-images')) {
+                    $imageUrl = $product->getFirstMedia('product-images')->getUrl();
+                }
+            @endphp
+
+            @if($imageUrl)
+                <img src="{{ $imageUrl }}" 
                      alt="{{ $product->name }}" 
                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
             @else

@@ -2,29 +2,21 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
-// --- DOĞRU 'use' BİLDİRİMLERİ ---
-// TÜM bileşenler 'Filament\Forms\Components' altından gelir
+use App\Models\GalleryImage;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-
-// Slug utility Set IS under Schemas (Bu özel bir durum)
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
-
-// Fonksiyon imzası Schema kullanır
-use Filament\Schemas\Schema; // <-- Form DEĞİL, Schema KULLANILIR
+use Filament\Schemas\Schema;
 
 class ProductForm
 {
-    // --- DOĞRU FONKSİYON İMZASI ---
-    public static function configure(Schema $schema): Schema // <-- Form DEĞİL, Schema KULLANILIR
+    public static function configure(Schema $schema): Schema
     {
-        // --- DOĞRU ÇAĞRI ---
         return $schema
-            // ->schema DEĞİL, ->components kullanılır
             ->components([
                 TextInput::make('name')
                     ->label('Ürün Adı')
@@ -65,6 +57,22 @@ class ProductForm
 
                 Toggle::make('is_active')
                     ->label('Ürün Yayında mı?')->default(true),
+
+                // --- GÖRSEL YÖNETİMİ ---
+
+                Select::make('from_gallery_id')
+                    ->label('Galeriden Görsel Seç')
+                    ->helperText('Daha önce yüklenmiş bir görseli kullanmak için seçin.')
+                    ->options(GalleryImage::all()->pluck('title', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->columnSpanFull(),
+
+                TextInput::make('original_image_url')
+                    ->label('Resim Linki (Manuel)')
+                    ->helperText('Resim yüklemede sorun yaşıyorsanız buraya link girebilirsiniz. Bu link kullanılarak resim sunucuya indirilecektir.')
+                    ->url()
+                    ->columnSpanFull(),
 
                 SpatieMediaLibraryFileUpload::make('featured_image')
                     ->label('Ana Ürün Resmi')->collection('product-images')
