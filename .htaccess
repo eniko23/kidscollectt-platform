@@ -1,3 +1,14 @@
+# Hassas dosyalara erişimi engelle
+<FilesMatch "^\.(env|git|gitattributes|gitignore|editorconfig)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "(composer\.json|composer\.lock|package\.json|package-lock\.json|phpunit\.xml|vite\.config\.js)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 

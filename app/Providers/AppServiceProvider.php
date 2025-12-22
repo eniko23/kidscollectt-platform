@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Fix for older MySQL versions on shared hosting
+        Schema::defaultStringLength(191);
+
         // Force HTTPS in production or when behind a proxy
         $isHttps = request()->header('X-Forwarded-Proto') === 'https' 
                 || request()->header('CF-Visitor') 
